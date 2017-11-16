@@ -1,0 +1,11 @@
+Package: MarineDatabase
+Type: Package
+Title: Tools to build a standardized data repository for Norwegian Polar Institute marine biological and oceanographical data
+Version: 0.1.0
+Author: Norwegian Polar Institute
+Maintainer: Mikko Vihtakari <mikko.vihtakari@gmail.com>
+Description: An attempt to compile all marine biological and connected oceanographical data to a data base. This package contains functions and documents to make such
+data repository available one day. 
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
