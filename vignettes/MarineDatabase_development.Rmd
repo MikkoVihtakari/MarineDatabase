@@ -213,7 +213,7 @@ Standardized sample IDs are used for each expedition (see the structure in [Data
 
 # Export formats of data
 
-Exporting data from the database should not be a major challenge as long as the data structure is consistent. For example, writing a script that exports relevant data for [Dr B in tabular format](#motivation), is just matter of searching meta-data, picking relevant data fields and merging them together into a table. This table can then be exported as a .csv file, which in turn can (hopefully) be read by Dr B.
+Exporting data from the database should not be a major challenge as long as the data structure is consistent. For example, writing a script that exports relevant data for [Dr B in tabular format](#motivation), is just a matter of searching meta-data, picking relevant data fields and merging them together into a table. This table can then be exported as a .csv file, which in turn can (hopefully) be read by Dr B.
 
 Writing wrappers that take structured data from the database and add fields required by standardized data formats (netCDF, coverageJSON, you name it) is also only a matter of manipulating the data in a script.
 
