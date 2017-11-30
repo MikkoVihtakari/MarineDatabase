@@ -10,7 +10,7 @@ output:
     theme: lumen
     toc_float: true
     toc_depth: 3
-    collapsed: false
+    collapsed: true
     variant: markdown+simple_table
     fig_caption: true
     number_sections: false
@@ -119,7 +119,7 @@ Note that geographic coordinates, date-time, and bottom depth will vary for each
 
 ## Data
 
-Data will be organized under it's own level:
+Data will be organized under its own level:
 
 ```{r echo = FALSE}
 stn <- Node$new("Station ID")
