@@ -1,17 +1,34 @@
 ##' @title Compile marine biological data to Norwegian Polar Institute data format
-##' @description The function compiles scientific cruise data from *one station* to the format required by the Norwegian Polar Institute
+##' @description The function compiles scientific cruise data from +emph{one station} to the format required by the Norwegian Polar Institute data base
 ##' @param dt data frame containing overview of the cruise data. See details for formatting instructions.
-##' @param ctds list of \link[]{ctd-class} objects taken at the station. Required if \code{dt} contains CTD casts.
+##' @param ctds list of \link[oce]{ctd-class} objects taken at the station. Required if \code{dt} contains CTD casts.
+##' @param station.col Character. Column name specifying the station name in \code{dt}
+##' @param date.col Character. Column name specifying the sampling time in \code{dt}. The \code{date.col} in \code{dt} be in \code{\link[=DateTimeClasses]{POSIXct}} format.
+##' @param expedition Character string specifying the name of the expedition.
+##' @param latitude.col Character. Column name specifying the latitude column in \code{dt}. The \code{latitude.col} in \code{dt} be given in decimal degrees.
+##' @param longitude.col Character. Column name specifying the longitude column in \code{dt}. The \code{longitude.col} in \code{dt} be given in decimal degrees.
+##' @param variable.col Character. Column name specifying the variable column. This is stupid programming and should be changed.
+##' @param value.col Character. Column name specifying the value column. This is stupid programming and should be changed.
+##' @param type.col Column name specifying the sample type column in \code{dt}. This will be used to place data on the same level than CTD data in the hierarchy. Important!
+##' @param gear.col Column name specifying the sampling gear column in \code{dt}
+##' @param unit.col Column name specifying the unit of \code{value.col} column in \code{dt}
+##' @param sample.name.col Column name specifying the sample name column in \code{dt}. Important for binding meta-data and actual data together.
+##' @param sampling.depth.col Column name specifying the sampling depth column in \code{dt}. Important parameter. Should be given in meters.
+##' @param find.ctds Logical. Should the function find ctd casts from a list of \link[oce]{ctd-class} objects based on station name?
 ##' @details The data frame for \code{dt} should be formatted as Dr. Anette Wold's Excel sheets tend to be formatted.
 ##' @author Mikko Vihtakari
-##' @import oce
+##' @import oce lubridate
 ##' @export
 
-dt = dat[dat$Station == levels(dat$Station)[11],]; station.col = "Station"; date.col = "Date"; expedition = "TWICE"; latitude.col = "lat"; longitude.col = "lon"; ctds = oces[dt[dt$Type == "CTD", "variable"]] ; variable.col = "variable"; value.col = "value"; type.col = "Type"; gear.col = "Gear"; unit.col = "unit"; sample.name.col = "Name"; sampling.depth.col = "From"
+#dt = stn_data; station.col = "Station"; date.col = "Date"; expedition = "TWICE"; latitude.col = "lat"; longitude.col = "lon"; ctds = ctd.data; variable.col = "variable"; value.col = "value"; type.col = "Type"; gear.col = "Gear"; unit.col = "unit"; sample.name.col = "Name"; sampling.depth.col = "From"; find.ctds = TRUE
 
 make_station_data <- function(dt, station.col = "Station", date.col = "Date", expedition = "TWICE", latitude.col = "lat", longitude.col = "lon", ctds = NULL, variable.col = "variable", value.col = "value", type.col = "Type", gear.col = "Gear", unit.col = "unit", sample.name.col = "Name", sampling.depth.col = "From", find.ctds = TRUE) {
 
   dt <- droplevels(dt)
+
+  ## Conditionals
+
+  if(class(ctds) == "ctd") ctds <- list(ctds)
 
   ### Metadata
   stn <- as.character(unique(dt[, station.col]))
@@ -39,8 +56,8 @@ make_station_data <- function(dt, station.col = "Station", date.col = "Date", ex
 
 if(nrow(dt[dt$Type == "CTD",]) != 0) {
  if(is.null(ctds)) stop("Give oce::ctd-class objects or remove CTDs from data")
-  if(is.list(oces) & find.ctds) {
-    ctds <- oces[dt[dt[,type.col] == "CTD", variable.col]]
+  if(is.list(ctds) & find.ctds) {
+    ctds <- ctds[dt[dt[,type.col] == "CTD", variable.col]]
     message(paste("Finding CTD casts from a list of ctd objects.", names(ctds), "selected"))
   } else {
     NULL
