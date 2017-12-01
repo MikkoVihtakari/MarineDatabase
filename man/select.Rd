@@ -2,7 +2,7 @@
 % Please edit documentation in R/select.R
 \name{select}
 \alias{select}
-\title{Select y'th element of each vector from a list}
+\title{Select an element of each vector from a list}
 \usage{
 select(x, y)
 }
@@ -10,4 +10,7 @@ select(x, y)
 \item{x}{list}
 
 \item{y}{number of element. Must be numeric}
+}
+\description{
+Selects y'th element of each vector from a list
 }

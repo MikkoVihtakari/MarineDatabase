@@ -17,5 +17,6 @@ if(Sys.info()["sysname"] == "Windows") {
   devel <- "devel/"
   twice <- "C:/Users/mikko/Dropbox/Workstuff/2017 TW-ICE/"
   } else {
- NULL
+ devel <- "devel/"
+ twice <- "/Users/mvi023/Dropbox/Workstuff/2017 TW-ICE/"
 }

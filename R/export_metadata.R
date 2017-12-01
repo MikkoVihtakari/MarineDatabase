@@ -1,11 +1,36 @@
 #' @title Export meta-data to NPI database input format
 #' @description Exports meta-data from Excel files to the format accepted by NPI data managers
-#' @import openxlsx
+#' @param meta_file File name of the meta-data table. Currently only Excel files are supported.
+#' @param sheet sheet number or name where meta-data are located. See \code{\link[openxlsx]{read.xlsx}}
+#' @param expedition Column name specifying the name of the expedition.
+#' @param station Column name specifying the station name.
+#' @param type Column name specifying the sample type column.
+#' @param sample_name Column name specifying the sample name column.
+#' @param longitude Column name specifying the longitude column. Coordinates should be given in decimal degrees.
+#' @param latitude Column name specifying the latitude column. Coordinates should be given in decimal degrees.
+#' @param date Column name specifying the sampling time. The information will be transformed to ISO 8601 standard format.
+#' @param bottom_depth Column name specifying the bottom depth during sampling.
+#' @param gear Name of the column specifying the sampling gear.
+#' @param from Name of the column specifying the depth from which sampling was started.
+#' @param to Name of the column specifying the depth from which sampling was ended.
+#' @param filtered_volume Name of the column specifying filtered volume in ml for filtered samples.
+#' @param responsible Name of the column specifying the responsible persons for the sampling.
+#' @param comment Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column.
+#' @param additional Additional columns to be included in meta-data. Must be specified as a character vector, which lists exact column names to be included.
+#' @details All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
+#' @examples \donttest{
+#' ## Read meta-data and let the function to find errors in it:
+#' x <- export_metadata("Samplelog MOSJ 2015.xlsx")
+#'
+#' ## Meta-data reading follows openxlsx syntax:
+#' x <- export_metadata("GlacierFront_2017_Samplelog_20171024.xlsx", sheet = "SAMPLELOG",
+#' filtered_volume = "Filtration.volume.(ml)", responsible = "Contact.person")
+#' }
+#' @import openxlsx utils
 #' @importFrom lubridate year month day
 #' @export
 
-#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx")
-#sheet = 1
+#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL ; meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171024.xlsx"); sheet = "SAMPLELOG"; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
 
 export_metadata <- function(meta_file, sheet = 1, expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment", additional = NULL) {
 
@@ -25,9 +50,15 @@ sapply(required_cols, function(k) {
   }
 })
 
+## Quality flag to whether meta-data can be merged with data
+
+quality.flag <- TRUE
+dups <- NULL
+dup.rows <- NULL
+
 ## Structure
 
-dt <- dt[unname(sapply(required_cols, function(k) get(k)))]
+dt <- dt[c(unname(sapply(required_cols, function(k) get(k))), additional)]
 colnames(dt) <- required_cols
 dt <- rapply(object = dt, f = factor, classes = "character", how = "replace")
 
@@ -66,13 +97,22 @@ tp <- lapply(1:nrow(dt), function(i) {
   tmp
 })
 
-dt <- do.call(rbind, tp)
+tp <- do.call(rbind, tp)
 
-removed <- dt[is.na(dt$temp_type2),]
+removed <- tp[is.na(tp$temp_type2),]
 
-dt <- dt[!is.na(dt$temp_type2),]
-
+dt <- tp[!is.na(tp$temp_type2),]
 dt$type <- factor(dt$temp_type2)
+
+## Duplicated sample types
+
+if(any(duplicated(dt[c("expedition", "sample_name")]))) {
+dups <- as.character(dt$sample_name[duplicated(dt[c("expedition", "sample_name")])])
+dup.rows <- as.numeric(rownames(tp[tp$sample_name %in% dups,])) + 1
+warning(cat("Sample names", dups, "are duplicated on rows", dup.rows, ". Note that this problem has to be fixed before you can use the meta-data to export data files"))
+message(cat("", sep = "\n"))
+quality.flag <- FALSE
+}
 
 ## Coordinates
 
@@ -95,9 +135,17 @@ tp <- lapply(1:nrow(dt), function(i) {
   #print(i)
   tmp <- dt[i,]
   if(!as.character(tmp$gear) %in% GEAR$gear) {
-    temp_gear <- agrep(as.character(tmp$gear), GEAR$gear, value = TRUE)
+    tmp$gear <- as.character(tmp$gear)
 
-    if(length(temp_gear) != 1) stop(paste("Gear type approximate matching does not work for row", i))
+    temp_gear <- agrep(tmp$gear, GEAR$gear, value = TRUE)
+
+    # Exceptions
+    if(tmp$gear == "Multinet") temp_gear <- grep("200", temp_gear, value = TRUE)
+    if(tmp$gear == "CTD") temp_gear <- grep("Ship", temp_gear, value = TRUE)
+
+    if(length(temp_gear) == 0) temp_gear <- agrep(gsub("[[:punct:]]", " ", tmp$gear), GEAR$gear, value = TRUE)
+
+    if(length(temp_gear) != 1) stop(paste("Fuzzy matching", tmp$gear, "does not work for row", i))
 
     tmp$gear <- temp_gear
   } else {
@@ -131,6 +179,7 @@ suppressWarnings(dt$filtered_volume <- as.numeric(dt$filtered_volume))
 warning("filtered_volume converted to numeric. NAs produced. Check the data.")
   }
 
+if(any(dt$filtered_volume < 10)) warning("Filtered volumes should be given in ml. Values less than 10 ml were found. Are you sure?")
 ## Responsible
 
 dt$responsible <- as.character(dt$responsible)
@@ -145,10 +194,16 @@ dt <- dt[-grep("temp", colnames(dt))]
 
 ## Output
 
-out <- list(dt, removed, file_id)
-names(out) <- c("meta", "deleted", "file_id")
+out <- list(dt, removed, file_id, dups, dup.rows, quality.flag)
+names(out) <- c("meta", "deleted", "file_id", "duplicates", "duplicate_rows", "merge_allowed")
 
 class(out) <- "MetaData"
+
+## Messages
+
+if(nrow(out$deleted) != 0) message(paste(nrow(out$deleted), "entries removed. Write $deleted to see the entries"))
+
+## Return
 
 out
 

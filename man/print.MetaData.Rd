@@ -15,7 +15,7 @@
 \code{\link{print}} function for \code{\link[=export_metadata]{MetaData}} objects
 }
 \seealso{
-\code{\link{make_station_data}}
+\code{\link{export_metadata}}
 }
 \author{
 Mikko Vihtakari

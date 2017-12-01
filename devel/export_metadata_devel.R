@@ -5,28 +5,40 @@ library("MarineDatabase")
 
 x <- export_metadata(paste0(devel, "Samplelog MOSJ 2015.xlsx"))
 
+x <- export_metadata(paste0(twice, "GlacierFront_2017_Samplelog_20171024.xlsx"), sheet = "SAMPLELOG", filtered_volume = "Filtration.volume.(ml)", responsible = "Contact.person")
+
+
  ## Only one origin date. Nice!
 
  # Compare with the Excel sheet. Looks good!
 
 
 
-switch (column,
-  sample.name.col = "name",
-  station.col = "station",
-  latitude.col = c("latitude", "decimal"),
-  longitude.col = c("longitude", "decimals"),
-  bottom.depth.col = c("bottom", "depth"),
-  date.col = "date",
-  gear.col = "gear",
-  from.col = "from",
-  to.col = "to",
-  filtered.vol.col = "volume",
-  type.col = "type",
-  responsible.col = "person",
-  comment.col = "comment",
+coln_search_word <- function(column) {
+  switch (column,
+  expedition = "expedition",
+  sample_name = "name",
+  station = "station",
+  latitude = c("latitude", "decimal"),
+  longitude = "longitude decimals",
+  bottom_depth = c("bottom", "depth"),
+  date = "date",
+  gear = "gear",
+  from = "from",
+  to = "to",
+  filtered_volume = "volume",
+  type = "type",
+  responsible = "person",
+  comment = "comment",
   stop(paste(fn, "column type not set"))
 )
+}
+
+
+
+sapply(required_cols, function(k) {
+  agrep(coln_search_word(k), colnames(dt), value = TRUE)
+})
 
 c("sample.name.col", "station.col", "latitude.col", "longitude.col", "bottom.depth.col", "date.col", "gear.col", "from.col", "to.col", "filtered.vol.col", "type.col", "responsible.col", "comment.col")
 

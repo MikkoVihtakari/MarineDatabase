@@ -13,6 +13,54 @@ export_metadata(meta_file, sheet = 1, expedition = "Expedition",
   responsible = "Responsible.person", comment = "Comment",
   additional = NULL)
 }
+\arguments{
+\item{meta_file}{File name of the meta-data table. Currently only Excel files are supported.}
+
+\item{sheet}{sheet number or name where meta-data are located. See \code{\link[openxlsx]{read.xlsx}}}
+
+\item{expedition}{Column name specifying the name of the expedition.}
+
+\item{station}{Column name specifying the station name.}
+
+\item{type}{Column name specifying the sample type column.}
+
+\item{sample_name}{Column name specifying the sample name column.}
+
+\item{longitude}{Column name specifying the longitude column. Coordinates should be given in decimal degrees.}
+
+\item{latitude}{Column name specifying the latitude column. Coordinates should be given in decimal degrees.}
+
+\item{date}{Column name specifying the sampling time. The information will be transformed to ISO 8601 standard format.}
+
+\item{bottom_depth}{Column name specifying the bottom depth during sampling.}
+
+\item{gear}{Name of the column specifying the sampling gear.}
+
+\item{from}{Name of the column specifying the depth from which sampling was started.}
+
+\item{to}{Name of the column specifying the depth from which sampling was ended.}
+
+\item{filtered_volume}{Name of the column specifying filtered volume in ml for filtered samples.}
+
+\item{responsible}{Name of the column specifying the responsible persons for the sampling.}
+
+\item{comment}{Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column.}
+
+\item{additional}{Additional columns to be included in meta-data. Must be specified as a character vector, which lists exact column names to be included.}
+}
 \description{
 Exports meta-data from Excel files to the format accepted by NPI data managers
+}
+\details{
+All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
+}
+\examples{
+\donttest{
+## Read meta-data and let the function to find errors in it:
+x <- export_metadata("Samplelog MOSJ 2015.xlsx")
+
+## Meta-data reading follows openxlsx syntax:
+x <- export_metadata("GlacierFront_2017_Samplelog_20171024.xlsx", sheet = "SAMPLELOG",
+filtered_volume = "Filtration.volume.(ml)", responsible = "Contact.person")
+}
 }
