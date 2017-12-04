@@ -29,7 +29,7 @@ print.MetaData <- function(x, ...) {
   cat(NULL, sep = "\n")
   cat(NULL, sep = "\n")
   if(!is.null(x$duplicates)) {
-    cat("Sample names", x$duplicates, "are duplicated on rows", x$duplicate_rows)
+    cat(paste(length(x$duplicate_names), "sample names are duplicated. Write $duplicates to see them."))
   } else {
     cat("No duplicates.")
   }

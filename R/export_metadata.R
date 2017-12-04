@@ -107,11 +107,18 @@ dt$type <- factor(dt$temp_type2)
 ## Duplicated sample types
 
 if(any(duplicated(dt[c("expedition", "sample_name")]))) {
-dups <- as.character(dt$sample_name[duplicated(dt[c("expedition", "sample_name")])])
-dup.rows <- as.numeric(rownames(tp[tp$sample_name %in% dups,])) + 1
-warning(cat("Sample names", dups, "are duplicated on rows", dup.rows, ". Note that this problem has to be fixed before you can use the meta-data to export data files"))
-message(cat("", sep = "\n"))
+
+  dups <- as.character(dt$sample_name[duplicated(dt[c("expedition", "sample_name")])])
+  dup_dat <- tp[tp$sample_name %in% dups, c("sample_name", "type", "station")]
+  dup_dat$row_number <- as.numeric(rownames(dup_dat)) +1
+  dup_dat <-  dup_dat[order(dup_dat$sample_name),]
+  rownames(dup_dat) <- 1:nrow(dup_dat)
+
+  warning(paste(length(dups), "sample names are duplicated. Write $duplicates to see them. Note that this problem has to be fixed before you can use the meta-data to export data files"))
 quality.flag <- FALSE
+} else {
+  dups <- NULL
+  dup_dat <- NULL
 }
 
 ## Coordinates
@@ -175,11 +182,11 @@ dt <- convert_sampling_depths(dt, "to")
 ## Filtered volume
 
 if(!is.numeric(dt$filtered_volume)) {
-suppressWarnings(dt$filtered_volume <- as.numeric(dt$filtered_volume))
-warning("filtered_volume converted to numeric. NAs produced. Check the data.")
-  }
+  suppressWarnings(dt$filtered_volume <- as.numeric(dt$filtered_volume))
+  warning("filtered_volume converted to numeric. NAs produced. Check the data.")
+}
 
-if(any(dt$filtered_volume < 10)) warning("Filtered volumes should be given in ml. Values less than 10 ml were found. Are you sure?")
+if(any(na.omit(dt$filtered_volume < 10))) warning("Filtered volumes should be given in ml. Values less than 10 ml were found. Are you sure?")
 ## Responsible
 
 dt$responsible <- as.character(dt$responsible)
@@ -194,8 +201,8 @@ dt <- dt[-grep("temp", colnames(dt))]
 
 ## Output
 
-out <- list(dt, removed, file_id, dups, dup.rows, quality.flag)
-names(out) <- c("meta", "deleted", "file_id", "duplicates", "duplicate_rows", "merge_allowed")
+out <- list(dt, removed, file_id, dups, dup_dat, quality.flag)
+names(out) <- c("meta", "deleted", "file_id", "duplicate_names", "duplicates", "merge_allowed")
 
 class(out) <- "MetaData"
 
