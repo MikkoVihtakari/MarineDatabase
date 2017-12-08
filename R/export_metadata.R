@@ -17,14 +17,17 @@
 #' @param responsible Name of the column specifying the responsible persons for the sampling.
 #' @param comment Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column.
 #' @param additional Additional columns to be included in meta-data. Must be specified as a character vector, which lists exact column names to be included.
+#' @param guess_colnames Logical indicating whether fuzzy matching (\code{\link[base]{agrep}}) should be used to guess column names.
 #' @details All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
+#' 
+#' Columns \code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{filtered_volume}, \code{responsible} and \code{comment} are required. Each of these column arguments have a reasonble "guess" column name (see \strong{Usage}) that should match the column names when read from an Excel file. You can use \code{guess_colnames = TRUE} to make the function guess column names, if they differ somewhat from the original column names listed in \strong{Usage}. 
 #' @examples \donttest{
 #' ## Read meta-data and let the function to find errors in it:
 #' x <- export_metadata("Samplelog MOSJ 2015.xlsx")
 #'
 #' ## Meta-data reading follows openxlsx syntax:
 #' x <- export_metadata("GlacierFront_2017_Samplelog_20171024.xlsx", sheet = "SAMPLELOG",
-#' filtered_volume = "Filtration.volume.(ml)", responsible = "Contact.person")
+#' guess_colnames = TRUE)
 #' }
 #' @import openxlsx utils
 #' @importFrom lubridate year month day
@@ -32,7 +35,7 @@
 
 #meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL ; meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171024.xlsx"); sheet = "SAMPLELOG"; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
 
-export_metadata <- function(meta_file, sheet = 1, expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment", additional = NULL) {
+export_metadata <- function(meta_file, sheet = 1, expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment", additional = NULL, guess_colnames = FALSE) {
 
 file_ext <- getFileNameExtension(meta_file)
 
@@ -44,11 +47,14 @@ if(file_ext %in% c("xlsx", "xls")) {
 
 required_cols <- c("expedition", "station", "type", "sample_name", "longitude", "latitude", "date", "bottom_depth", "gear", "from", "to", "filtered_volume", "responsible", "comment")
 
-sapply(required_cols, function(k) {
+if(!guess_colnames) {
+  sapply(required_cols, function(k) {
   if(!get(k) %in% colnames(dt)) {
     stop(paste(k, "was not found from column names of dt. Check column name specifications or add the column."))
   }
 })
+}
+
 
 ## Quality flag to whether meta-data can be merged with data
 
@@ -58,8 +64,14 @@ dup.rows <- NULL
 
 ## Structure
 
-dt <- dt[c(unname(sapply(required_cols, function(k) get(k))), additional)]
-colnames(dt) <- required_cols
+if(guess_colnames) {
+  dt <- dt[c(unname(guess_colname(required_cols, dt)), additional)]
+} else {
+ dt <- dt[c(unname(sapply(required_cols, function(k) get(k))), additional)]
+}
+
+colnames(dt) <- required_cols  
+
 dt <- rapply(object = dt, f = factor, classes = "character", how = "replace")
 
 ## Dates
@@ -216,6 +228,8 @@ out
 
 }
 
+#########################
+### Helper functions ####
 
 getFileNameExtension <- function (fn) {
 # remove a path
@@ -228,4 +242,35 @@ l           <-length (splitted)
 if (l > 1 && sum(splitted[1:(l-1)] != ''))  ext <-splitted [l]
 # the extention must be the suffix of a non-empty name
 ext
+}
+
+# Guess column name helper function
+#' @param cols columns to be guessed
+#' @param df data frame with column names
+guess_colname <- function(cols = required_cols, df = dt) {
+  
+  sapply(cols, function(k) {
+    colnames(df)[agrep(coln_search_word(k), gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", gsub("[[:punct:]]", " ", colnames(df)), perl = TRUE), ignore.case = TRUE)][1]
+  })
+}
+
+# Column name search words for guess_colname
+coln_search_word <- function(column) {
+  switch (column,
+  expedition = "expedition",
+  sample_name = "name",
+  station = "station",
+  latitude = "latitude decimal",
+  longitude = "longitude decimal",
+  bottom_depth = "bottom depth",
+  date = "date",
+  gear = "gear",
+  from = "depth m from",
+  to = "depth m to",
+  filtered_volume = "volume",
+  type = "type",
+  responsible = "person",
+  comment = "comment",
+  stop(paste(fn, "column type not set"))
+)
 }

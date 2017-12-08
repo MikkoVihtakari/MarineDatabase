@@ -11,7 +11,7 @@ export_metadata(meta_file, sheet = 1, expedition = "Expedition",
   gear = "Gear", from = "Sampling.depth.(m).from",
   to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume",
   responsible = "Responsible.person", comment = "Comment",
-  additional = NULL)
+  additional = NULL, guess_colnames = FALSE)
 }
 \arguments{
 \item{meta_file}{File name of the meta-data table. Currently only Excel files are supported.}
@@ -47,12 +47,16 @@ export_metadata(meta_file, sheet = 1, expedition = "Expedition",
 \item{comment}{Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column.}
 
 \item{additional}{Additional columns to be included in meta-data. Must be specified as a character vector, which lists exact column names to be included.}
+
+\item{guess_colnames}{Logical indicating whether fuzzy matching (\code{\link[base]{agrep}}) should be used to guess column names.}
 }
 \description{
 Exports meta-data from Excel files to the format accepted by NPI data managers
 }
 \details{
 All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
+
+Columns \code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{filtered_volume}, \code{responsible} and \code{comment} are required. Each of these column arguments have a reasonble "guess" column name (see \strong{Usage}) that should match the column names when read from an Excel file. You can use \code{guess_colnames = TRUE} to make the function guess column names, if they differ somewhat from the original column names listed in \strong{Usage}.
 }
 \examples{
 \donttest{
@@ -61,6 +65,6 @@ x <- export_metadata("Samplelog MOSJ 2015.xlsx")
 
 ## Meta-data reading follows openxlsx syntax:
 x <- export_metadata("GlacierFront_2017_Samplelog_20171024.xlsx", sheet = "SAMPLELOG",
-filtered_volume = "Filtration.volume.(ml)", responsible = "Contact.person")
+guess_colnames = TRUE)
 }
 }
