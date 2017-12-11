@@ -33,7 +33,7 @@
 #' @importFrom lubridate year month day
 #' @export
 
-#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL ; meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171024.xlsx"); sheet = "SAMPLELOG"; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
+#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL ; meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171024.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE#; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
 
 export_metadata <- function(meta_file, sheet = 1, expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment", additional = NULL, guess_colnames = FALSE) {
 
@@ -72,6 +72,10 @@ if(guess_colnames) {
 
 colnames(dt) <- required_cols  
 
+## Trim whitespace
+
+dt$sample_name <- trimws(dt$sample_name)
+
 dt <- rapply(object = dt, f = factor, classes = "character", how = "replace")
 
 ## Dates
@@ -84,18 +88,18 @@ if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
   stop("Implement new date conversion. Does not work for these data.")
 }
 
-## Expedition
+## Expedition ####
 
 levels(dt$expedition) <- gsub(" ", "", levels(dt$expedition))
 dt <- droplevels(dt)
 
 if(nlevels(dt) > 1) warning("There are several levels for expedition in the meta-data.")
 
-## Station
+## Station ####
 
 if(any(duplicated(tolower(levels(dt$station))))) warning("Station names may contain typos. Check the station names from the output.")
 
-## Sample type
+## Sample type ####
 
 data(sample_types)
 
@@ -104,6 +108,17 @@ dt$temp_type <- select(strsplit(as.character(dt$sample_name), "\\-"), 1)
 i <- 2
 tp <- lapply(1:nrow(dt), function(i) {
   tmp <- dt[i,]
+  
+  ## Add samples that are separated by ; on one row as separate samples
+  if(grepl(";", tmp$sample_name)) {
+    tp <- lapply(trimws(unlist(strsplit(as.character(tmp$sample_name), ";"))), function(g) {
+      tp <- tmp
+      tp$sample_name <- g
+      tp
+    })
+   tmp <- do.call(rbind, tp) 
+  }
+  
   temp_type2 <- ifelse(length(TYPES[TYPES$code %in% tmp$temp_type ,"sample_type"]) == 0, NA, TYPES[TYPES$code %in% tmp$temp_type ,"sample_type"])
   tmp$temp_type2 <- temp_type2
   tmp
@@ -112,6 +127,7 @@ tp <- lapply(1:nrow(dt), function(i) {
 tp <- do.call(rbind, tp)
 
 removed <- tp[is.na(tp$temp_type2),]
+removed <- removed[-grep("temp", colnames(removed))]
 
 dt <- tp[!is.na(tp$temp_type2),]
 dt$type <- factor(dt$temp_type2)
@@ -245,8 +261,8 @@ ext
 }
 
 # Guess column name helper function
-#' @param cols columns to be guessed
-#' @param df data frame with column names
+#' param cols columns to be guessed
+#' param df data frame with column names
 guess_colname <- function(cols = required_cols, df = dt) {
   
   sapply(cols, function(k) {
