@@ -261,8 +261,8 @@ ext
 }
 
 # Guess column name helper function
-# param cols columns to be guessed
-# param df data frame with column names
+# @param cols columns to be guessed
+# @param df data frame with column names
 guess_colname <- function(cols = required_cols, df = dt) {
   
   sapply(cols, function(k) {
