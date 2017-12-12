@@ -33,7 +33,7 @@
 #' @importFrom lubridate year month day
 #' @export
 
-#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL ; meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171024.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE#; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
+#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL #; meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE#; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
 
 export_metadata <- function(meta_file, sheet = 1, expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment", additional = NULL, guess_colnames = FALSE) {
 
@@ -54,7 +54,6 @@ if(!guess_colnames) {
   }
 })
 }
-
 
 ## Quality flag to whether meta-data can be merged with data
 
@@ -105,7 +104,7 @@ data(sample_types)
 
 dt$temp_type <- select(strsplit(as.character(dt$sample_name), "\\-"), 1)
 
-i <- 2
+#i <- 2
 tp <- lapply(1:nrow(dt), function(i) {
   tmp <- dt[i,]
   
@@ -164,30 +163,37 @@ if(!is.numeric(dt$latitude)) {
 ## Gear
 
 data("gear_types")
+dt$gear <- as.character(dt$gear)
 
-i <- 1
+i <- 128
 tp <- lapply(1:nrow(dt), function(i) {
   #print(i)
   tmp <- dt[i,]
-  if(!as.character(tmp$gear) %in% GEAR$gear) {
-    tmp$gear <- as.character(tmp$gear)
-
-    temp_gear <- agrep(tmp$gear, GEAR$gear, value = TRUE)
-
-    # Exceptions
-    if(tmp$gear == "Multinet") temp_gear <- grep("200", temp_gear, value = TRUE)
-    if(tmp$gear == "CTD") temp_gear <- grep("Ship", temp_gear, value = TRUE)
-
-    if(length(temp_gear) == 0) temp_gear <- agrep(gsub("[[:punct:]]", " ", tmp$gear), GEAR$gear, value = TRUE)
-
-    if(length(temp_gear) != 1) stop(paste("Fuzzy matching", tmp$gear, "does not work for row", i))
-
-    tmp$gear <- temp_gear
+  
+  if(tmp$temp_type == "CTD") {
+    temp_gear <- TYPES[TYPES$code == "CTD", "gear_type"]
   } else {
-    tmp$gear <- tmp$gear
-  }
-  tmp
-})
+    if(tmp$temp_type == "CTM") {
+      temp_gear <- TYPES[TYPES$code == "CTM", "gear_type"]
+    } else {
+    
+      if(!as.character(tmp$gear) %in% GEAR$gear) {
+        
+        temp_gear <- agrep(tmp$gear, GEAR$gear, value = TRUE)
+
+      # Exceptions
+          if(tmp$gear == "Multinet") temp_gear <- grep("200", temp_gear, value = TRUE)
+          if(length(temp_gear) != 1) temp_gear <- agrep(gsub("[[:punct:]]", " ", tmp$gear), GEAR$gear, value = TRUE)
+          if(length(temp_gear) != 1 & length(TYPES[TYPES$code == tmp$temp_type, "gear_type"]) != 0) temp_gear <- TYPES[TYPES$code == tmp$temp_type, "gear_type"]
+          if(length(temp_gear) != 1) stop(paste("Fuzzy matching", tmp$gear, "does not work for row", i))    
+  } else {
+    temp_gear <- tmp$gear
+  }}}
+  
+    tmp$gear <- temp_gear
+    tmp
+    })
+
 
 dt <- do.call(rbind, tp)
 

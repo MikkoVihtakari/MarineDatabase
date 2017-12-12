@@ -2,5 +2,6 @@
 ^\.Rprofile$
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^devel/
 ^runfirst\.R$
+^\*.xlsx$
+^devel$
