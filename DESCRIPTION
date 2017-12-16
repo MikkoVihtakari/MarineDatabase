@@ -1,7 +1,7 @@
 Package: MarineDatabase
 Type: Package
 Title: Export data to Norwegian Polar Institute's marine database
-Version: 0.1.5
+Version: 0.1.6
 Author: Norwegian Polar Institute
 Maintainer: Mikko Vihtakari <mikko.vihtakari@gmail.com>
 Description: An attempt to compile functions that make data validation and imporing easier to the NPI's Marine Database.
@@ -9,6 +9,6 @@ License: MIT
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
-Imports: lubridate, openxlsx, oce
+Imports: lubridate, openxlsx, oce, ggplot2, reshape2
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr

@@ -3,6 +3,11 @@ library(MarineDatabase)
 
 x <- process_cdom_data(paste0(devel, "GlacierFront_2017_CDOM.xlsx"), sheet = "all", blank_correction = "One milliQ")
 
+x
+
+plot(x)
+
+plot(x, "model_fit")
 
 if(length(sheet > 1)) {
     .combine_cdom_data(data_file, sheet, blank_correction)

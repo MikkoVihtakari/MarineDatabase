@@ -13,6 +13,22 @@ process_cdom_data(data_file, sheet = "all", blank_correction = "One milliQ")
 
 \item{blank_correction}{Character specifying the type of blank correction that should be used. Options: \code{"One milliQ"} (default) or \code{"Moving average"}. See Details for requirements for each type.}
 }
+\value{
+Returns a list of class \code{CDOMdata} containing a data frame of spectral absorption coefficients (\code{$spectra}) and a data frame of desired variables (\code{$data}) to be exported to the database. The element \code{data} contains following columns:
+\itemize{
+\item \strong{\code{sample_name}} The standardized sample name that can be linked to \link[=export_metadata]{meta-data}
+\item \strong{\code{abs254}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 254 nm wavelength
+\item \strong{\code{abs350}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 350 nm wavelength
+\item \strong{\code{abs375}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 375 nm wavelength
+\item \strong{\code{abs440}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 440 nm wavelength
+\item \strong{\code{sl295}} Spectral slope for wavelengths between 275 and 295 nm. The slope is calculated using linear approximation after Helms et al. (2008). Absorption coefficients are logarithm transformed prior fitting using a linear model (see \code{\link{lm}}). The values are reported as positive exponential numbers following the mathematical convention of fitting to an exponential decay (see \code{sl650}), but are actually negative. The slopes are expressed in \eqn{µm^{-1}}{µm-1}. If the slope is \code{NA}, some of the absorption coefficients were negative over the spectral range (275-295 nm), making it impossible to logarithm transform the values.
+\item \strong{\code{sl400}} Spectral slope (\eqn{µm^{-1}}{µm-1}) for wavelengths between 350 and 400 nm. See \code{sl295} for details.
+\item \strong{\code{slope_ratio}} Slope ratio between \code{sl295} and \code{sl400} (\eqn{sl295/sl400}). The ratio is calculated using the exponential slopes.
+\item \strong{\code{sl650}} Spectral slope (\eqn{µm^{-1}}{µm-1}) for wavelengths between 300 and 650 nm. The slope is calculated by fitting a nonlinear exponetial model on absorbation coefficients using the \code{\link{nls}} function. The equation is from Helms et al. (2008) and can be expressed as follows:
+\deqn{a_{\lambda} = a_{0} \times e^{-sl650 \times wavelength}}{a(\lambda) = a(0) * exp(-sl650 * wavelength)}
+where \eqn{a_{\lambda}}{a(\lambda)} are the absorption coefficient values over the spectrum 300 - 650 nm, \eqn{a_{0}}{a(0)} the intercept and \code{sl650} the slope. The nonlinear estimation can handle negative absorption coefficient values, unlike the linear approximation, and produces very similar results to linear approximation (Helms et al. 2008). The downside with nonlinear estimation is that it might not manage to fit the function on data that contain heavy instrumental errors. Currently the function does not include a buffer against this and may return an error, when used on bad data.
+}
+}
 \description{
 Reads CDOM data from Excel sheets and calculates a range of parameters that can be exported to the database.
 }
@@ -62,21 +78,6 @@ A list of class \code{CDOMdata} is returned. See Value for details.
 }
 
 The routine above is conducted by a hidden function named \code{.cdom_data}. The \code{process_cdom_data} function loops the \code{.cdom_data} function over all tabs in an Excel file if \code{sheet = "all"} or over selected tabs, if a vector containing sheet numbers or names is supplied. Another hidden function \code{.combine_cdom_data} combines data provided by \code{.cdom_data} and generates a progress bar as running the routine over large files might take some time.
-
-#' @return Returns a list of class \code{CDOMdata} containing a data frame of spectral absorption coefficients (\code{$spectra}) and a data frame of desired variables (\code{$data}) to be exported to the database. The element \code{data} contains following columns:
-\itemize{
-\item \strong{\code{sample_name}} The standardized sample name that can be linked to \link[=export_metadata]{meta-data}
-\item \strong{\code{abs254}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 254 nm wavelength
-\item \strong{\code{abs350}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 350 nm wavelength
-\item \strong{\code{abs375}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 375 nm wavelength
-\item \strong{\code{abs440}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 440 nm wavelength
-\item \strong{\code{sl295}} Spectral slope for wavelengths between 275 and 295 nm. The slope is calculated using linear approximation after Helms et al. (2008). Absorption coefficients are logarithm transformed prior fitting using a linear model (see \code{\link{lm}}). The values are reported as positive exponential numbers following the mathematical convention of fitting to an exponential decay (see \code{sl650}), but are actually negative. The slopes are expressed in \eqn{µm^{-1}}{µm-1}. If the slope is \code{NA}, some of the absorption coefficients were negative over the spectral range (275-295 nm), making it impossible to logarithm transform the values.
-\item \strong{\code{sl400}} Spectral slope (\eqn{µm^{-1}}{µm-1}) for wavelengths between 350 and 400 nm. See \code{sl295} for details.
-\item \strong{\code{slope_ratio}} Slope ratio between \code{sl295} and \code{sl400} (\eqn{sl295/sl400}). The ratio is calculated using the exponential slopes.
-\item \strong{\code{sl650}} Spectral slope (\eqn{µm^{-1}}{µm-1}) for wavelengths between 300 and 650 nm. The slope is calculated by fitting a nonlinear exponetial model on absorbation coefficients using the \code{\link{nls}} function. The equation is from Helms et al. (2008) and can be expressed as follows:
-\deqn{a_{\lambda} = a_{0} \times e^{-sl650 \times wavelength}}{a(\lambda) = a(0) * exp(-sl650 * wavelength)}
-where \eqn{a_{\lambda}}{a(\lambda)} are the absorption coefficient values over the spectrum 300 - 650 nm, \eqn{a_{0}}{a(0)} the intercept and \code{sl650} the slope. The nonlinear estimation can handle negative absorption coefficient values, unlike the linear approximation, and produces very similar results to linear approximation (Helms et al. 2008). The downside with nonlinear estimation is that it might not manage to fit the function on data that contain heavy instrumental errors. Currently the function does not include a buffer against this and may return an error, when used on bad data.
-}
 }
 \references{
 Green, S.A., Blough, N. V, 1994. Optical absorption and fluorescence properties of chromophoric dissolved organic matter in natural waters. Limnol. Oceanogr. 39, 1903–1916. doi:10.4319/lo.1994.39.8.1903
@@ -86,7 +87,7 @@ Helms, J.R., Stubbins, A., Ritchie, J.D., Minor, E.C., Kieber, D.J., Mopper, K.,
 Stedmon, C.A., Markager, S., Kaas, H., 2000. Optical Properties and Signatures of Chromophoric Dissolved Organic Matter (CDOM) in Danish Coastal Waters. Estuar. Coast. Shelf Sci. 51, 267–278. doi:10.1006/ecss.2000.0645
 }
 \seealso{
-\code{\link{print.CDOMdata}}
+\code{\link{plot.CDOMdata}} \code{\link{print.CDOMdata}}
 }
 \author{
 Mikko Vihtakari, Alexey Pavlov

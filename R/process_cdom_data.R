@@ -50,7 +50,7 @@
 #' 
 #' The routine above is conducted by a hidden function named \code{.cdom_data}. The \code{process_cdom_data} function loops the \code{.cdom_data} function over all tabs in an Excel file if \code{sheet = "all"} or over selected tabs, if a vector containing sheet numbers or names is supplied. Another hidden function \code{.combine_cdom_data} combines data provided by \code{.cdom_data} and generates a progress bar as running the routine over large files might take some time.
 #' 
-#' #' @return Returns a list of class \code{CDOMdata} containing a data frame of spectral absorption coefficients (\code{$spectra}) and a data frame of desired variables (\code{$data}) to be exported to the database. The element \code{data} contains following columns:
+#' @return Returns a list of class \code{CDOMdata} containing a data frame of spectral absorption coefficients (\code{$spectra}) and a data frame of desired variables (\code{$data}) to be exported to the database. The element \code{data} contains following columns:
 #' \itemize{
 #' \item \strong{\code{sample_name}} The standardized sample name that can be linked to \link[=export_metadata]{meta-data}
 #' \item \strong{\code{abs254}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 254 nm wavelength
@@ -73,11 +73,10 @@
 #' @import openxlsx
 #' @example #make some
 #' @author Mikko Vihtakari, Alexey Pavlov
-#' @seealso \code{\link{print.CDOMdata}}
+#' @seealso \code{\link{plot.CDOMdata}} \code{\link{print.CDOMdata}}
 #' @export
 
 #data_file = paste0(devel, "GlacierFront_2017_CDOM.xlsx"); sheet = "all"; blank_correction = "One milliQ"
-
 process_cdom_data <- function(data_file, sheet = "all", blank_correction = "One milliQ") {
 
 file_ext <- get_file_ext(data_file)
@@ -96,6 +95,8 @@ if(sheet == "all") {
 
 }
 
+
+#dat = paste0(devel, "GlacierFront_2017_CDOM.xlsx"); sht = 1:2; blk = "One milliQ"
 .combine_cdom_data <- function(dat, sht, blk) {
 
 pb <- txtProgressBar(min = 0, max = length(sht), style = 3)  
@@ -107,8 +108,10 @@ tmp <- lapply(sht, function(k) {
   
   out <- do.call(rbind, lapply(tmp, function(k) k$data))
   proc_data <- Reduce(function(x, y) merge(x, y, by= "wavelength"), lapply(tmp, function(k) k$spectra))
-
-  x <- list(spectra = proc_data, data = out)
+  #mods <- do.call(c, lapply(tmp, function(k) k$models))
+  mod.dat <- do.call(rbind, lapply(tmp, function(k) k$model.data))
+  
+  x <- list(spectra = proc_data, data = out, model.data = mod.dat)
 
   class(x) <- class(x) <- "CDOMdata"
 
@@ -229,18 +232,22 @@ S650 <- lapply(grep("CDO", colnames(dt), value = TRUE), function(k) {
   
   mod <- nls(value ~ a * exp(-S * wavelength), data = tmp, start = list(a = 78, S = 0.02))
   #mod <- nls(value ~ SSasymp(wavelength, Asym = K, R0, lrc = S), data = tmp)
-  data.frame(sample_name = k, sl650 = 1000*coef(mod)[["S"]])
+  mod.dat <- data.frame(sample_name = k, wavelength = tmp$wavelength, fitted = predict(mod))
+  
+  list(data = data.frame(sample_name = k, sl650 = 1000*coef(mod)[["S"]]), model.data = mod.dat)
 })
 
-S650 <- do.call(rbind, S650)
+S650dat <- do.call(rbind, lapply(S650, function(k) k$data))
 
-out <- merge(out, S650)
+mods <- do.call(rbind, lapply(S650, function(k) k$model.data))
+
+out <- merge(out, S650dat)
 
 ## Export the data ####
 
 out <- out[!colnames(out) %in% c("positive400", "positive295")]
 
-x <- list(spectra = proc_data, data = out)
+x <- list(spectra = proc_data, data = out, model.data = mods)
 
 class(x) <- "CDOMdata"
 
