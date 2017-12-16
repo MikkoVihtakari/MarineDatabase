@@ -37,7 +37,7 @@
 
 export_metadata <- function(meta_file, sheet = 1, expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment", additional = NULL, guess_colnames = FALSE) {
 
-file_ext <- getFileNameExtension(meta_file)
+file_ext <- get_file_ext(meta_file)
 
 if(file_ext %in% c("xlsx", "xls")) {
   dt <- read.xlsx(meta_file, sheet = sheet)
@@ -252,29 +252,6 @@ out
 
 #########################
 ### Helper functions ####
-
-getFileNameExtension <- function (fn) {
-# remove a path
-splitted    <- strsplit(x=fn, split='/')[[1]]
-# or use .Platform$file.sep in stead of '/'
-fn          <- splitted [length(splitted)]
-ext         <- ''
-splitted    <- strsplit(x=fn, split='\\.')[[1]]
-l           <-length (splitted)
-if (l > 1 && sum(splitted[1:(l-1)] != ''))  ext <-splitted [l]
-# the extention must be the suffix of a non-empty name
-ext
-}
-
-# Guess column name helper function
-# @param cols columns to be guessed
-# @param df data frame with column names
-guess_colname <- function(cols = required_cols, df = dt) {
-  
-  sapply(cols, function(k) {
-    colnames(df)[agrep(coln_search_word(k), gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", gsub("[[:punct:]]", " ", colnames(df)), perl = TRUE), ignore.case = TRUE)][1]
-  })
-}
 
 # Column name search words for guess_colname
 coln_search_word <- function(column) {
