@@ -7,7 +7,24 @@ dat <- process_cdom_data(paste0(devel, "GlacierFront_2017_CDOM.xlsx"), sheet = "
 
 x <- compile_data(dat, meta)
 
+dat2 <- process_cdom_data(paste0(devel, "MOSJ-2016 CDOM raw 1.xlsx"), sheet = "all", blank_correction = "Moving average")
 
+plot(dat2, type = "model_fit")
+
+
+tmp <- read.xlsx("devel/MOSJ-2016 CDOM raw 1.xlsx", 1)
+tmp <- data.frame(apply(tmp, 2, function(k) as.numeric(as.character(k))))
+
+colnames(tmp)[2:length(colnames(tmp))] <- gsub("\\.", "\\-", colnames(tmp)[2:length(colnames(tmp))])
+colnames(tmp)[1] <- "Wavelength"
+tmp <- tmp[!colnames(tmp) %in% c("MOSJ2016-009", "MOSJ2016-009-B", "MOSJ2016-MQ009")]
+colnames(tmp)[colnames(tmp) == "MOSJ2016-MQ1"] <- "MOSJ2016-MQ009"
+ord <- c("Wavelength", "MOSJ2016-MQ0", "MOSJ2016-001", "MOSJ2016-002", "MOSJ2016-003", "MOSJ2016-004", "MOSJ2016-005", "MOSJ2016-006", "MOSJ2016-007", "MOSJ2016-008", "MOSJ2016-MQ009", "MOSJ2016-010", "MOSJ2016-011", "MOSJ2016-012", "MOSJ2016-013", "MOSJ2016-014", "MOSJ2016-015", "MOSJ2016-016", "MOSJ2016-017", "MOSJ2016-018", "MOSJ2016-019", "MOSJ2016-MQ019", "MOSJ2016-020", "MOSJ2016-021", "MOSJ2016-022", "MOSJ2016-023", "MOSJ2016-024", "MOSJ2016-025", "MOSJ2016-026", "MOSJ2016-027", "MOSJ2016-028", "MOSJ2016-029", "MOSJ2016-030", "MOSJ2016-MQ030")
+
+
+tmp <- tmp[ord]
+
+write.xlsx(tmp, "devel/MOSJ-2016 CDOM raw 1.xlsx")
 
 x
 

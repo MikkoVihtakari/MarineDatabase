@@ -2,6 +2,7 @@
 ##' @description Plot method for \code{\link[=process_cdom_data]{CDOMdata}} objects.
 ##' @param x \code{CDOMdata} object from \code{\link{process_cdom_data}} function.
 ##' @param type Character specifying the type of the plot. Options: \code{"spectra"}, \code{"models"} or \code{"model_fit"}. See Details
+##' @param ... Further arguments that do not work.
 ##' @method plot CDOMdata
 ##' @details Three plot types have been implemented:
 ##' \itemize{
@@ -16,7 +17,7 @@
 ##' @import ggplot2 reshape2
 ##' @export
 
-plot.CDOMdata <- function(x, type = "spectra") {
+plot.CDOMdata <- function(x, type = "spectra", ...) {
 
   if(class(x) != "CDOMdata") stop("x must be a CDOMdata object")
 

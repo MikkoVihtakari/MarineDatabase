@@ -4,12 +4,14 @@
 \alias{plot.CDOMdata}
 \title{Plot CDOM data}
 \usage{
-\method{plot}{CDOMdata}(x, type = "spectra")
+\method{plot}{CDOMdata}(x, type = "spectra", ...)
 }
 \arguments{
 \item{x}{\code{CDOMdata} object from \code{\link{process_cdom_data}} function.}
 
 \item{type}{Character specifying the type of the plot. Options: \code{"spectra"}, \code{"models"} or \code{"model_fit"}. See Details}
+
+\item{...}{Further arguments that do not work.}
 }
 \description{
 Plot method for \code{\link[=process_cdom_data]{CDOMdata}} objects.
