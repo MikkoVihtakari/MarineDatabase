@@ -73,7 +73,9 @@
 #' @import openxlsx
 #' @importFrom zoo na.approx
 #' @author Mikko Vihtakari, Alexey Pavlov
-#' @seealso \code{\link{plot.CDOMdata}} \code{\link{print.CDOMdata}}
+#' @seealso \code{\link{plot.CDOMdata}} and \code{\link{print.CDOMdata}} for methods to use with \code{CDOMdata} objects.
+#' 
+#' \code{\link{compile_data}} to combine CDOM data with meta-data.
 #' @export
 
 #data_file = paste0(devel, "GlacierFront_2017_CDOM.xlsx"); sheet = "all"; blank_correction = "One milliQ"
