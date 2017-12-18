@@ -26,7 +26,7 @@
 #' }
 #' \item Baseline correction
 #' 
-#' Baseline correction is done by substracting the average absorption in the range 600-650 nm from each spectra. This routine introduces the assumption that absororbance is equal to zero in the range 600-650 nm attributing any variation from zero to instrument baseline drift, temperature, scattering, and refractive effects (see Spectral corrections and S determination section in Material and Methods in Helms et al. 2008 and Green & Blough 1994).
+#' Baseline correction is done by subtracting the average absorption in the range 600-650 nm from each spectra. This routine introduces the assumption that absorbance is equal to zero in the range 600-650 nm attributing any variation from zero to instrument baseline drift, temperature, scattering, and refractive effects (see Spectral corrections and S determination section in Material and Methods in Helms et al. 2008 and Green & Blough 1994).
 #' 
 #' \item Conversion from absorbance to absorption coefficients
 #' 
@@ -37,11 +37,11 @@
 #'    
 #' \item Calculate spectral slopes for 275-295 and 350-400 nm using linear model fitting
 #' 
-#' See Value for details about spectal slope calculation
+#' See Value for details about spectral slope calculation
 #' 
 #' \item	Calculate spectral slopes for 300-650 nm using nonlinear model fitting.
 #' 
-#' See Value for details about spectal slope calculation.
+#' See Value for details about spectral slope calculation.
 #' 
 #' \item Return a list of variables
 #' 
@@ -60,7 +60,7 @@
 #' \item \strong{\code{sl295}} Spectral slope for wavelengths between 275 and 295 nm. The slope is calculated using linear approximation after Helms et al. (2008). Absorption coefficients are logarithm transformed prior fitting using a linear model (see \code{\link{lm}}). The values are reported as positive exponential numbers following the mathematical convention of fitting to an exponential decay (see \code{sl650}), but are actually negative. The slopes are expressed in \eqn{µm^{-1}}{µm-1}. If the slope is \code{NA}, some of the absorption coefficients were negative over the spectral range (275-295 nm), making it impossible to logarithm transform the values.
 #' \item \strong{\code{sl400}} Spectral slope (\eqn{µm^{-1}}{µm-1}) for wavelengths between 350 and 400 nm. See \code{sl295} for details.
 #' \item \strong{\code{slope_ratio}} Slope ratio between \code{sl295} and \code{sl400} (\eqn{sl295/sl400}). The ratio is calculated using the exponential slopes.
-#' \item \strong{\code{sl650}} Spectral slope (\eqn{µm^{-1}}{µm-1}) for wavelengths between 300 and 650 nm. The slope is calculated by fitting a nonlinear exponetial model on absorbation coefficients using the \code{\link{nls}} function. The equation is from Helms et al. (2008) and can be expressed as follows:
+#' \item \strong{\code{sl650}} Spectral slope (\eqn{µm^{-1}}{µm-1}) for wavelengths between 300 and 650 nm. The slope is calculated by fitting a nonlinear exponential model on absorpation coefficients using the \code{\link{nls}} function. The equation is from Helms et al. (2008) and can be expressed as follows:
 #' \deqn{a_{\lambda} = a_{0} \times e^{-sl650 \times wavelength}}{a(\lambda) = a(0) * exp(-sl650 * wavelength)}
 #' where \eqn{a_{\lambda}}{a(\lambda)} are the absorption coefficient values over the spectrum 300 - 650 nm, \eqn{a_{0}}{a(0)} the intercept and \code{sl650} the slope. The nonlinear estimation can handle negative absorption coefficient values, unlike the linear approximation, and produces very similar results to linear approximation (Helms et al. 2008). The downside with nonlinear estimation is that it might not manage to fit the function on data that contain heavy instrumental errors. Currently the function does not include a buffer against this and may return an error, when used on bad data.
 #' }
@@ -71,7 +71,7 @@
 #' 
 #' Stedmon, C.A., Markager, S., Kaas, H., 2000. Optical Properties and Signatures of Chromophoric Dissolved Organic Matter (CDOM) in Danish Coastal Waters. Estuar. Coast. Shelf Sci. 51, 267–278. doi:10.1006/ecss.2000.0645
 #' @import openxlsx
-#' @example #make some
+#' @importFrom zoo na.approx
 #' @author Mikko Vihtakari, Alexey Pavlov
 #' @seealso \code{\link{plot.CDOMdata}} \code{\link{print.CDOMdata}}
 #' @export
@@ -94,7 +94,6 @@ if(sheet == "all") {
 }
 
 }
-
 
 #dat = paste0(devel, "GlacierFront_2017_CDOM.xlsx"); sht = 1:2; blk = "One milliQ"
 .combine_cdom_data <- function(dat, sht, blk) {
@@ -120,7 +119,7 @@ tmp <- lapply(sht, function(k) {
   return(x)
 }
 
-#Data_file = paste0(devel, "GlacierFront_2017_CDOM.xlsx"); Sheet = 1; Blank_correction = "One milliQ"
+#Data_file = paste0(devel, "MOSJ-2016 CDOM raw 1.xlsx"); Sheet = 1; Blank_correction = "Moving average" #Data_file = paste0(devel, "GlacierFront_2017_CDOM.xlsx"); Blank_correction = "One milliQ"
 .cdom_data <- function(Data_file, Sheet, Blank_correction) {
 
 dt <- read.xlsx(Data_file, Sheet)
@@ -154,12 +153,35 @@ dt <- na.omit(dt)
 
 ## Blank correction ####
 
-if(Blank_correction == "One milliQ") {
-  dt[grep("CDO", colnames(dt))] <- dt[grep("CDO", colnames(dt))] - dt[[mqs]]
-  dt <- dt[!colnames(dt) %in% mqs]
-} else {
-  stop("Other blank correction methods have not been implemented yet. Send an email to Mikko")
-}
+switch(Blank_correction, 
+  
+  `One milliQ` = {
+    
+    dt[grep("CDO", colnames(dt))] <- dt[grep("CDO", colnames(dt))] - dt[[mqs]]
+    
+    dt <- dt[!colnames(dt) %in% mqs]
+    
+    },
+  
+  `Moving average` = {
+    
+    x <- dt[2:ncol(dt)]
+
+    # Make a data frame for moving average 
+    x[!grepl("MQ", colnames(x))] <- NA
+
+    y <- t(apply(x, 1, function(i) zoo::na.approx(as.numeric(i), na.rm = FALSE))) ## Linear interpolation, i.e. running mean to make a matrix for blank corrections
+
+    dt[2:ncol(dt)] <- dt[2:ncol(dt)]-y
+
+    dt <- dt[!grepl("MQ", colnames(dt))] ## Remove blanks
+
+  },
+  
+  stop(paste(Blank_correction, "has not been implemented. Check the blank_correction argument."))
+  
+)
+
 
 ## Baseline correction with 600-650 nm average
 
