@@ -50,6 +50,9 @@ export_metadata(meta_file, sheet = 1, expedition = "Expedition",
 
 \item{guess_colnames}{Logical indicating whether fuzzy matching (\code{\link[base]{agrep}}) should be used to guess column names.}
 }
+\value{
+Returns a list of class \code{MetaData} that contains modified meta-data records (\code{$meta}), removed meta-data records (\code{$deleted}), file name to be used when saved for database import (\code{file_id}) and a data frame containing row numbers of duplicates in the original Excel sheet (\code{$duplicates}).
+}
 \description{
 Exports meta-data from Excel files to the format accepted by NPI data managers
 }

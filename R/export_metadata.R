@@ -21,6 +21,7 @@
 #' @details All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
 #' 
 #' Columns \code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{filtered_volume}, \code{responsible} and \code{comment} are required. Each of these column arguments have a reasonble "guess" column name (see \strong{Usage}) that should match the column names when read from an Excel file. You can use \code{guess_colnames = TRUE} to make the function guess column names, if they differ somewhat from the original column names listed in \strong{Usage}. 
+#' @return Returns a list of class \code{MetaData} that contains modified meta-data records (\code{$meta}), removed meta-data records (\code{$deleted}), file name to be used when saved for database import (\code{file_id}) and a data frame containing row numbers of duplicates in the original Excel sheet (\code{$duplicates}).
 #' @examples \donttest{
 #' ## Read meta-data and let the function to find errors in it:
 #' x <- export_metadata("Samplelog MOSJ 2015.xlsx")
@@ -33,7 +34,7 @@
 #' @importFrom lubridate year month day
 #' @export
 
-#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL #; meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE#; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
+#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL; meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE#; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
 
 export_metadata <- function(meta_file, sheet = 1, expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment", additional = NULL, guess_colnames = FALSE) {
 
@@ -80,8 +81,8 @@ dt <- rapply(object = dt, f = factor, classes = "character", how = "replace")
 ## Dates
 
 if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
-  dt$temp_date <- convertToDateTime(dt$date, tz = "UTC")
-  dt$date <- strftime(as.POSIXct(dt$temp_date, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
+  dt$temp_date <- convertToDateTime(dt$date, tz = "GMT")
+  dt$date <- strftime(as.POSIXct(dt$temp_date, "GMT"), "%Y-%m-%dT%H:%M:%S%z")
   message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "class assuming", getDateOrigin(meta_file), "as origin date. Control that dates match with the Excel sheet."))
 } else {
   stop("Implement new date conversion. Does not work for these data.")
@@ -123,29 +124,30 @@ tp <- lapply(1:nrow(dt), function(i) {
   tmp
 })
 
-tp <- do.call(rbind, tp)
+original <- do.call(rbind, tp)
 
-removed <- tp[is.na(tp$temp_type2),]
+removed <- original[is.na(original$temp_type2),]
 removed <- removed[-grep("temp", colnames(removed))]
 
-dt <- tp[!is.na(tp$temp_type2),]
+dt <- original[!is.na(original$temp_type2),]
 dt$type <- factor(dt$temp_type2)
 
-## Duplicated sample types
+## Warn about sample names that do not contain enough 0s ####
 
-if(any(duplicated(dt[c("expedition", "sample_name")]))) {
+tmp <- strsplit(as.character(dt$sample_name), split = "-")
+index <- unlist(lapply(tmp, function(k) nchar(gsub("[[:alpha:]]", "", k[2]))))
 
-  dups <- as.character(dt$sample_name[duplicated(dt[c("expedition", "sample_name")])])
-  dup_dat <- tp[tp$sample_name %in% dups, c("sample_name", "type", "station")]
-  dup_dat$row_number <- as.numeric(rownames(dup_dat)) +1
-  dup_dat <-  dup_dat[order(dup_dat$sample_name),]
-  rownames(dup_dat) <- 1:nrow(dup_dat)
+old_names <- as.character(dt$sample_name[index != 3])
 
-  warning(paste(length(dups), "sample names are duplicated. Write $duplicates to see them. Note that this problem has to be fixed before you can use the meta-data to export data files"))
-quality.flag <- FALSE
-} else {
-  dups <- NULL
-  dup_dat <- NULL
+if(length(old_names) > 0) {
+new_names <- sapply(strsplit(old_names, "-"), function(k) {
+    k[2] <- ifelse(nchar(k[2]) == 1, paste0("00", k[2]), ifelse(nchar(k[2]) == 2, paste0("0", k[2]), k[2]))
+    paste(k, collapse = "-")
+  })
+
+levels(dt$sample_name)[levels(dt$sample_name) %in% old_names] <- new_names
+
+message("sample_names ", paste(old_names, collapse = ", "), " contained too few numbers. Replaced by ", paste(new_names, collapse = ", "))
 }
 
 ## Coordinates
@@ -165,7 +167,7 @@ if(!is.numeric(dt$latitude)) {
 data("gear_types")
 dt$gear <- as.character(dt$gear)
 
-i <- 128
+#i <- 128
 tp <- lapply(1:nrow(dt), function(i) {
   #print(i)
   tmp <- dt[i,]
@@ -192,7 +194,7 @@ tp <- lapply(1:nrow(dt), function(i) {
   
     tmp$gear <- temp_gear
     tmp
-    })
+})
 
 
 dt <- do.call(rbind, tp)
@@ -224,6 +226,23 @@ if(any(na.omit(dt$filtered_volume < 10))) warning("Filtered volumes should be gi
 ## Responsible
 
 dt$responsible <- as.character(dt$responsible)
+
+## Duplicated sample types
+
+if(any(duplicated(dt[c("expedition", "sample_name")]))) {
+
+  dups <- as.character(dt$sample_name[duplicated(dt[c("expedition", "sample_name")])])
+  dup_dat <- original[original$sample_name %in% dups, c("sample_name", "type", "station")]
+  dup_dat$row_number <- as.numeric(rownames(dup_dat)) +1
+  dup_dat <-  dup_dat[order(dup_dat$sample_name),]
+  rownames(dup_dat) <- 1:nrow(dup_dat)
+
+  warning(paste(length(dups), "sample names are duplicated. Write $duplicates to see them. Note that this problem has to be fixed before you can use the meta-data to export data files"))
+quality.flag <- FALSE
+} else {
+  dups <- NULL
+  dup_dat <- NULL
+}
 
 ## Output parameters
 

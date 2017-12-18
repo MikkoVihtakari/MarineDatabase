@@ -243,6 +243,10 @@ mods <- do.call(rbind, lapply(S650, function(k) k$model.data))
 
 out <- merge(out, S650dat)
 
+## Quality checks ####
+
+if(any(duplicated(out$sample_name))) warning(paste(out$sample_name[duplicated(out$sample_name)], "are duplicated. Fix the column names in Excel sheets, if you want to merge these data with meta-data."))
+
 ## Export the data ####
 
 out <- out[!colnames(out) %in% c("positive400", "positive295")]

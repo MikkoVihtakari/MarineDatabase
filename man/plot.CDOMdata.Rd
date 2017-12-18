@@ -17,9 +17,9 @@ Plot method for \code{\link[=process_cdom_data]{CDOMdata}} objects.
 \details{
 Three plot types have been implemented:
 \itemize{
-\item \code{\strong{"spectra"}} Plots the absorbtion coefficient of all samples against wavelength. Flags samples that had negative values in the range between 350 and 400 nm. 
-\item \code{\strong{"models"}} Plots exponential decay models fitted using the \code{\link{nls}} function. See Value in \code{\link{process_cdom_data}} for details.
-\item \code{\strong{"model_fit"}} Plots both the absorbition coefficients and fitted nonlinear models. 
+\item \strong{\code{"spectra"}} Plots the absorbtion coefficient of all samples against wavelength. Flags samples that had negative values in the range between 350 and 400 nm. 
+\item \strong{\code{"models"}} Plots exponential decay models fitted using the \code{\link{nls}} function. See Value in \code{\link{process_cdom_data}} for details.
+\item \strong{\code{"model_fit"}} Plots both the absorbition coefficients and fitted nonlinear models. 
 }
 
 Note that especially the \code{"model_fit"} option might be slow for large datasets.

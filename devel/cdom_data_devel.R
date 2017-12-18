@@ -1,7 +1,13 @@
 source("runfirst.R")
 library(MarineDatabase)
 
-x <- process_cdom_data(paste0(devel, "GlacierFront_2017_CDOM.xlsx"), sheet = "all", blank_correction = "One milliQ")
+meta <- export_metadata(paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"), sheet = "SAMPLELOG", guess_colnames = TRUE)
+
+dat <- process_cdom_data(paste0(devel, "GlacierFront_2017_CDOM.xlsx"), sheet = "all", blank_correction = "One milliQ")
+
+x <- compile_data(dat, meta)
+
+
 
 x
 

@@ -2,6 +2,7 @@
 source("runfirst.R")
 library("openxlsx")
 library("MarineDatabase")
+Sys.setenv(TZ="Europe/Helsinki")
 
 x <- export_metadata(paste0(devel, "Samplelog MOSJ 2015.xlsx"), guess_colnames = TRUE)
 
