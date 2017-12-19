@@ -16,7 +16,9 @@ convert_sampling_depths <- function(dt, column, comment.col = "comment") {
   #print(i)
   tmp <- dt[i,]
 
-tmp$comment <- ifelse(grepl("[[:digit:]]", tmp[,column]), tmp[,comment.col], if(is.na(tmp[,comment.col])) {
+tmp$comment <- ifelse(grepl("[[:digit:]]", tmp[,column]), 
+  tmp[,comment.col], 
+  if(is.na(tmp[,comment.col])) {
     tmp[,column]
   } else {
       paste(tmp[,comment.col], tmp[,column], sep = ".")

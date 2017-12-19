@@ -87,7 +87,9 @@ Helms, J.R., Stubbins, A., Ritchie, J.D., Minor, E.C., Kieber, D.J., Mopper, K.,
 Stedmon, C.A., Markager, S., Kaas, H., 2000. Optical Properties and Signatures of Chromophoric Dissolved Organic Matter (CDOM) in Danish Coastal Waters. Estuar. Coast. Shelf Sci. 51, 267–278. doi:10.1006/ecss.2000.0645
 }
 \seealso{
-\code{\link{plot.CDOMdata}} \code{\link{print.CDOMdata}}
+\code{\link{plot.CDOMdata}} and \code{\link{print.CDOMdata}} for methods to use with \code{CDOMdata} objects.
+
+\code{\link{compile_data}} to combine CDOM data with meta-data.
 }
 \author{
 Mikko Vihtakari, Alexey Pavlov

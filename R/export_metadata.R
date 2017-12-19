@@ -34,10 +34,14 @@
 #' @importFrom lubridate year month day
 #' @export
 
-#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL; meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE#; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
+#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL; guess_colnames = FALSE
+
+#meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE#; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
 
 export_metadata <- function(meta_file, sheet = 1, expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment", additional = NULL, guess_colnames = FALSE) {
 
+## File handling ####
+  
 file_ext <- get_file_ext(meta_file)
 
 if(file_ext %in% c("xlsx", "xls")) {
@@ -76,34 +80,38 @@ colnames(dt) <- required_cols
 
 dt$sample_name <- trimws(dt$sample_name)
 
-dt <- rapply(object = dt, f = factor, classes = "character", how = "replace")
+## Column classes
+
+factor.cols <- c("expedition", "station", "type")
+dt[factor.cols] <- lapply(dt[factor.cols], function(k) factor(k))
+#dt <- rapply(object = dt, f = factor, classes = "character", how = "replace")
 
 ## Dates
 
 if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
   dt$temp_date <- convertToDateTime(dt$date, tz = "GMT")
-  dt$date <- strftime(as.POSIXct(dt$temp_date, "GMT"), "%Y-%m-%dT%H:%M:%S%z")
+  dt$date <- strftime(as.POSIXct(dt$temp_date, "GMT"), "%Y-%m-%dT%H:%M:%S%z", tz = "GMT")
   message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "class assuming", getDateOrigin(meta_file), "as origin date. Control that dates match with the Excel sheet."))
 } else {
   stop("Implement new date conversion. Does not work for these data.")
 }
 
-## Expedition ####
+## Expedition 
 
 levels(dt$expedition) <- gsub(" ", "", levels(dt$expedition))
 dt <- droplevels(dt)
 
 if(nlevels(dt) > 1) warning("There are several levels for expedition in the meta-data.")
 
-## Station ####
+## Station 
 
 if(any(duplicated(tolower(levels(dt$station))))) warning("Station names may contain typos. Check the station names from the output.")
 
 ## Sample type ####
 
-data(sample_types)
+#data(sample_types)
 
-dt$temp_type <- select(strsplit(as.character(dt$sample_name), "\\-"), 1)
+dt$temp_type <- MarineDatabase::select(strsplit(as.character(dt$sample_name), "\\-"), 1)
 
 #i <- 2
 tp <- lapply(1:nrow(dt), function(i) {
@@ -128,7 +136,9 @@ original <- do.call(rbind, tp)
 
 removed <- original[is.na(original$temp_type2),]
 removed <- removed[-grep("temp", colnames(removed))]
-
+removed$sample_name <- factor(removed$sample_name)
+removed$gear <- factor(removed$gear)
+  
 dt <- original[!is.na(original$temp_type2),]
 dt$type <- factor(dt$temp_type2)
 
@@ -147,27 +157,29 @@ new_names <- sapply(strsplit(old_names, "-"), function(k) {
 
 levels(dt$sample_name)[levels(dt$sample_name) %in% old_names] <- new_names
 
-message("sample_names ", paste(old_names, collapse = ", "), " contained too few numbers. Replaced by ", paste(new_names, collapse = ", "))
+message(paste0(length(old_names), " sample_names contained too few numbers (from ", old_names[1], " to ", old_names[length(old_names)], "). Replaced by new names (from ", new_names[1], " to ", new_names[length(new_names)], ")."))
 }
+
+dt$sample_name <- factor(dt$sample_name)
 
 ## Coordinates
 
 if(!is.numeric(dt$longitude)) {
-  dt$longitude <- numeric(dt$longitude)
+  dt$longitude <- as.numeric(as.character(dt$longitude))
   warning("longitude converted to numeric. Check longitude records for possible mistakes. Should be decimal degrees")
 }
 
 if(!is.numeric(dt$latitude)) {
-  dt$latitude <- numeric(dt$latitude)
+  dt$latitude <- as.numeric(as.character(dt$latitude))
   warning("latitude converted to numeric. Check latitude records for possible mistakes. Should be decimal degrees")
 }
 
-## Gear
+## Gear ####
 
-data("gear_types")
+#data("gear_types")
 dt$gear <- as.character(dt$gear)
 
-#i <- 128
+i <- 1
 tp <- lapply(1:nrow(dt), function(i) {
   #print(i)
   tmp <- dt[i,]
@@ -215,14 +227,22 @@ if(!is.numeric(dt$to)) {
 dt <- convert_sampling_depths(dt, "to")
 }
 
+## Bottom depth
+
+if(!is.numeric(dt$bottom_depth)) {
+  suppressWarnings(dt$bottom_depth <- as.numeric(as.character(dt$bottom_depth)))
+  message("bottom_depth converted to numeric. NAs maybe produced. Check the data.")
+}
+
 ## Filtered volume
 
 if(!is.numeric(dt$filtered_volume)) {
-  suppressWarnings(dt$filtered_volume <- as.numeric(dt$filtered_volume))
-  warning("filtered_volume converted to numeric. NAs produced. Check the data.")
+  suppressWarnings(dt$filtered_volume <- as.numeric(as.character(dt$filtered_volume)))
+  message("filtered_volume converted to numeric. NAs maybe produced. Check the data.")
 }
 
 if(any(na.omit(dt$filtered_volume < 10))) warning("Filtered volumes should be given in ml. Values less than 10 ml were found. Are you sure?")
+
 ## Responsible
 
 dt$responsible <- as.character(dt$responsible)
@@ -244,13 +264,16 @@ quality.flag <- FALSE
   dup_dat <- NULL
 }
 
-## Output parameters
+## Output parameters ####
 
 file_id <- paste(levels(dt$expedition), "metadata", sep = "_")
 
 ## Remove temporary columns
 
 dt <- dt[-grep("temp", colnames(dt))]
+
+#rm(TYPES)
+#rm(GEAR)
 
 ## Output
 
