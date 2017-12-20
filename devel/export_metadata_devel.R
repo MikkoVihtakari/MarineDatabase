@@ -3,11 +3,11 @@ source("runfirst.R")
 library("openxlsx")
 library("MarineDatabase")
 
-x <- export_metadata(paste0(devel, "Samplelog MOSJ 2015.xlsx"), guess_colnames = TRUE)
+x <- export_metadata(paste0(devel, "Samplelog MOSJ 2015.xlsx"))
 
-x <- export_metadata(paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"), sheet = "SAMPLELOG", guess_colnames = TRUE)
+x <- export_metadata(paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"), sheet = "SAMPLELOG")
 
-x <- export_metadata(paste0(devel, "test.xlsx"), guess_colnames = TRUE)
+x <- export_metadata(paste0(devel, "test.xlsx"))
  ## Only one origin date. Nice!
 
  # Compare with the Excel sheet. Looks good!

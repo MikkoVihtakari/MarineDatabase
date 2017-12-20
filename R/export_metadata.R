@@ -2,33 +2,43 @@
 #' @description Exports meta-data from Excel files to the format accepted by NPI data managers
 #' @param meta_file File name of the meta-data table or a data frame containing meta-data. If file name, the file has to have \code{.xlsx} extension.
 #' @param sheet sheet number or name where meta-data are located. See \code{\link[openxlsx]{read.xlsx}}
-#' @param expedition Column name specifying the name of the expedition.
-#' @param station Column name specifying the station name.
-#' @param type Column name specifying the sample type column.
-#' @param sample_name Column name specifying the sample name column.
-#' @param longitude Column name specifying the longitude column. Coordinates should be given in decimal degrees.
-#' @param latitude Column name specifying the latitude column. Coordinates should be given in decimal degrees.
-#' @param date Column name specifying the sampling time. The information will be transformed to ISO 8601 standard format.
-#' @param bottom_depth Column name specifying the bottom depth during sampling.
-#' @param gear Name of the column specifying the sampling gear.
-#' @param from Name of the column specifying the depth from which sampling was started.
-#' @param to Name of the column specifying the depth from which sampling was ended.
-#' @param filtered_volume Name of the column specifying filtered volume in ml for filtered samples.
-#' @param responsible Name of the column specifying the responsible persons for the sampling.
-#' @param comment Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column.
-#' @param additional Additional columns to be included in meta-data. Must be specified as a character vector, which lists exact column names to be included.
-#' @param guess_colnames Logical indicating whether fuzzy matching (\code{\link[base]{agrep}}) should be used to guess column names.
-#' @details All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
+#' @param guess_colnames Logical indicating whether \code{\link{guess_colname}} function should be used to search for required column names. Defaults to \code{TRUE}. See Details.
+#' @param additional Additional columns to be included in meta-data. Must be specified as a named character vector, which lists the exact column names to be included together with exported column names as names of the vector. See Examples.
+#' @param add_time Hours to be added to the ISO 8601 \code{date}s. See Details. 
+#' @param date_origin The origin for recorded dates in the Excel sheet in "YYYY-MM-DD" format. See Details.
+#' @param expedition Column name specifying the name of the expedition. See Details.
+#' @param station Column name specifying the station name. See Details.
+#' @param type Column name specifying the sample type column. See Details.
+#' @param sample_name Column name specifying the sample name column. See Details.
+#' @param longitude Column name specifying the longitude column. Coordinates should be given in decimal degrees. See Details.
+#' @param latitude Column name specifying the latitude column. Coordinates should be given in decimal degrees. See Details.
+#' @param date Column name specifying the sampling time. The information will be transformed to ISO 8601 standard format. See note about date conversion in Details. See Details.
+#' @param bottom_depth Column name specifying the bottom depth during sampling. See Details.
+#' @param gear Name of the column specifying the sampling gear. See Details.
+#' @param from Name of the column specifying the depth from which sampling was started. See Details.
+#' @param to Name of the column specifying the depth from which sampling was ended. See Details.
+#' @param filtered_volume Name of the column specifying filtered volume in ml for filtered samples. See Details.
+#' @param responsible Name of the column specifying the responsible persons for the sampling. See Details.
+#' @param comment Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column. See Details.
+#' @details The \strong{\code{\link{guess_colname}}} function is used to search for column names in \code{meta_file} by default. This procedure saves the user from specifying all the required column names (\code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{filtered_volume}, \code{responsible} and \code{comment}). The function works well with tested Excel sheets, but might cause an error if column names are far from tested names.
 #' 
-#' Columns \code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{filtered_volume}, \code{responsible} and \code{comment} are required. Each of these column arguments have a reasonble "guess" column name (see \strong{Usage}) that should match the column names when read from an Excel file. You can use \code{guess_colnames = TRUE} to make the function guess column names, if they differ somewhat from the original column names listed in \strong{Usage}. 
+#' The easiest solution is to change the column names close to column names listed in Usage (or close to those listed in \code{\link{coln_search_words}}). Alternatively you can list all column names manually. Note that any white space in column names must be denoted by period (\code{.}). All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
+#' 
+#' \strong{Date conversion} between Excel and R is fairly unstable business as your current locale (i.e. to what time zone your computer is set to) might affect the outcome. The easiest way to convert dates is to enter \code{meta_file} as a character string specifying the Excel file name (and location). This allows the usage of \emph{openxlsx} package's \code{\link[openxlsx]{convertToDateTime}} function, which often reads date-times correctly, given that the dates are entered in a consistent format (this is not always the case in sample logs). 
+#' 
+#' Another option is to input a data frame already opened from Excel. This option might be necessary when doing changes to the data frame prior passing it through the \code{export_metadata} function. In this case, you have to make sure that \code{date_origin} is correct for your operating system (see \url{https://www.r-bloggers.com/date-formats-in-r/}).
+#' 
+#' The \code{add_time} argument can be used to add or subtract hours from the output, if the times do not match with those in the Excel sheet. This can be helpful in either cases, if your locale causes an offset between recorded dates. 
+#' 
 #' @return Returns a list of class \code{MetaData} that contains modified meta-data records (\code{$meta}), removed meta-data records (\code{$deleted}), file name to be used when saved for database import (\code{file_id}) and a data frame containing row numbers of duplicates in the original Excel sheet (\code{$duplicates}).
 #' @examples \donttest{
 #' ## Read meta-data and let the function to find errors in it:
 #' x <- export_metadata("Samplelog MOSJ 2015.xlsx")
 #'
-#' ## Meta-data reading follows openxlsx syntax:
-#' x <- export_metadata("GlacierFront_2017_Samplelog_20171024.xlsx", sheet = "SAMPLELOG",
-#' guess_colnames = TRUE)
+#' ## Meta-data reading follows openxlsx syntax. 
+#' ## You can add columns using the additional argument:
+#' x <- export_metadata("GlacierFront_2017_Samplelog_20171024.xlsx", 
+#' sheet = "SAMPLELOG", additional = c(Conveyance = "Sampled.from"))
 #' }
 #' @import openxlsx utils
 #' @importFrom lubridate year month day
@@ -38,10 +48,10 @@
 
 #meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE#; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
 
-#meta_file = paste0(devel, "test.xlsx"); sheet = 1; guess_colnames = TRUE; additional = NULL
+#meta_file = paste0(devel, "test.xlsx"); sheet = 1; guess_colnames = TRUE; additional = NULL; add_time = 0
 
 
-export_metadata <- function(meta_file, sheet = 1, expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment", additional = NULL, guess_colnames = FALSE) {
+export_metadata <- function(meta_file, sheet = 1, guess_colnames = TRUE, additional = NULL, add_time = 0, date_origin = "1899-12-30", expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment") {
 
 ## File handling ####
 
@@ -78,12 +88,12 @@ dup.rows <- NULL
 ## Structure
 
 if(guess_colnames) {
-  dt <- dt[c(unname(guess_colname(required_cols, dt)), additional)]
+  dt <- dt[c(unname(guess_colname(required_cols, dt)), unname(additional))]
 } else {
- dt <- dt[c(unname(sapply(required_cols, function(k) get(k))), additional)]
+ dt <- dt[c(unname(sapply(required_cols, function(k) get(k))), unname(additional))]
 }
 
-colnames(dt) <- required_cols  
+colnames(dt) <- c(required_cols, names(additional))
 
 ## Trim whitespace
 
@@ -95,15 +105,22 @@ factor.cols <- c("expedition", "station", "type")
 dt[factor.cols] <- lapply(dt[factor.cols], function(k) factor(k))
 #dt <- rapply(object = dt, f = factor, classes = "character", how = "replace")
 
-## Dates
+## Dates ####
 
 if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
-  dt$temp_date <- convertToDateTime(dt$date, tz = "GMT")
-  dt$date <- strftime(as.POSIXct(dt$temp_date, "GMT"), "%Y-%m-%dT%H:%M:%S%z", tz = "GMT")
-  message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "class assuming", getDateOrigin(meta_file), "as origin date. Control that dates match with the Excel sheet."))
+  dt$temp_date <- convertToDateTime(dt$date, tz = "UTC")
+  dt$temp_date <- dt$temp_date + add_time*3600
+  dt$date <- strftime(as.POSIXct(dt$temp_date, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
+  message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "assuming", getDateOrigin(meta_file), "as origin date. Control that dates match with the Excel sheet. You can use add_time to adjust if there is offset."))
 } else {
+  if(is.numeric(dt$date)) {
+  dt$temp_date <- as.POSIXct(as.numeric(dt$date) * (60*60*24), tz = "UTC", origin = date_origin)
+  dt$temp_date <- dt$temp_date + add_time*3600
+  dt$date <- strftime(as.POSIXct(dt$temp_date, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
+  message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "class assuming", date_origin, "as origin date. Control that dates match with the Excel sheet. You can use add_time to adjust if there is offset."))
+  } else {
   stop("Implement new date conversion. Does not work for these data.")
-}
+}}
 
 ## Expedition 
 
@@ -302,28 +319,4 @@ if(nrow(out$deleted) != 0) message(paste(nrow(out$deleted), "entries removed. Wr
 
 out
 
-}
-
-#########################
-### Helper functions ####
-
-# Column name search words for guess_colname
-coln_search_word <- function(column) {
-  switch (column,
-  expedition = "expedition",
-  sample_name = "name",
-  station = "station",
-  latitude = "latitude decimal",
-  longitude = "longitude decimal",
-  bottom_depth = "bottom depth",
-  date = "date",
-  gear = "gear",
-  from = "depth m from",
-  to = "depth m to",
-  filtered_volume = "(filtered|filtration).volume",
-  type = "type",
-  responsible = "person",
-  comment = "comment",
-  stop(paste(column, "column type not set"))
-)
 }

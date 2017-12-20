@@ -4,51 +4,56 @@
 \alias{export_metadata}
 \title{Export meta-data to NPI database input format}
 \usage{
-export_metadata(meta_file, sheet = 1, expedition = "Expedition",
-  station = "Station", type = "Sample.type", sample_name = "Sample.name",
-  longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)",
-  date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)",
-  gear = "Gear", from = "Sampling.depth.(m).from",
-  to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume",
-  responsible = "Responsible.person", comment = "Comment",
-  additional = NULL, guess_colnames = FALSE)
+export_metadata(meta_file, sheet = 1, guess_colnames = TRUE,
+  additional = NULL, add_time = 0, date_origin = "1899-12-30",
+  expedition = "Expedition", station = "Station", type = "Sample.type",
+  sample_name = "Sample.name", longitude = "Longitude.(decimals)",
+  latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)",
+  bottom_depth = "Bottom.depth.(m)", gear = "Gear",
+  from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to",
+  filtered_volume = "Filtered.volume", responsible = "Responsible.person",
+  comment = "Comment")
 }
 \arguments{
 \item{meta_file}{File name of the meta-data table or a data frame containing meta-data. If file name, the file has to have \code{.xlsx} extension.}
 
 \item{sheet}{sheet number or name where meta-data are located. See \code{\link[openxlsx]{read.xlsx}}}
 
-\item{expedition}{Column name specifying the name of the expedition.}
+\item{guess_colnames}{Logical indicating whether \code{\link{guess_colname}} function should be used to search for required column names. Defaults to \code{TRUE}. See Details.}
 
-\item{station}{Column name specifying the station name.}
+\item{additional}{Additional columns to be included in meta-data. Must be specified as a named character vector, which lists the exact column names to be included together with exported column names as names of the vector. See Examples.}
 
-\item{type}{Column name specifying the sample type column.}
+\item{add_time}{Hours to be added to the ISO 8601 \code{date}s. See Details.}
 
-\item{sample_name}{Column name specifying the sample name column.}
+\item{date_origin}{The origin for recorded dates in the Excel sheet in "YYYY-MM-DD" format. See Details.}
 
-\item{longitude}{Column name specifying the longitude column. Coordinates should be given in decimal degrees.}
+\item{expedition}{Column name specifying the name of the expedition. See Details.}
 
-\item{latitude}{Column name specifying the latitude column. Coordinates should be given in decimal degrees.}
+\item{station}{Column name specifying the station name. See Details.}
 
-\item{date}{Column name specifying the sampling time. The information will be transformed to ISO 8601 standard format.}
+\item{type}{Column name specifying the sample type column. See Details.}
 
-\item{bottom_depth}{Column name specifying the bottom depth during sampling.}
+\item{sample_name}{Column name specifying the sample name column. See Details.}
 
-\item{gear}{Name of the column specifying the sampling gear.}
+\item{longitude}{Column name specifying the longitude column. Coordinates should be given in decimal degrees. See Details.}
 
-\item{from}{Name of the column specifying the depth from which sampling was started.}
+\item{latitude}{Column name specifying the latitude column. Coordinates should be given in decimal degrees. See Details.}
 
-\item{to}{Name of the column specifying the depth from which sampling was ended.}
+\item{date}{Column name specifying the sampling time. The information will be transformed to ISO 8601 standard format. See note about date conversion in Details. See Details.}
 
-\item{filtered_volume}{Name of the column specifying filtered volume in ml for filtered samples.}
+\item{bottom_depth}{Column name specifying the bottom depth during sampling. See Details.}
 
-\item{responsible}{Name of the column specifying the responsible persons for the sampling.}
+\item{gear}{Name of the column specifying the sampling gear. See Details.}
 
-\item{comment}{Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column.}
+\item{from}{Name of the column specifying the depth from which sampling was started. See Details.}
 
-\item{additional}{Additional columns to be included in meta-data. Must be specified as a character vector, which lists exact column names to be included.}
+\item{to}{Name of the column specifying the depth from which sampling was ended. See Details.}
 
-\item{guess_colnames}{Logical indicating whether fuzzy matching (\code{\link[base]{agrep}}) should be used to guess column names.}
+\item{filtered_volume}{Name of the column specifying filtered volume in ml for filtered samples. See Details.}
+
+\item{responsible}{Name of the column specifying the responsible persons for the sampling. See Details.}
+
+\item{comment}{Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column. See Details.}
 }
 \value{
 Returns a list of class \code{MetaData} that contains modified meta-data records (\code{$meta}), removed meta-data records (\code{$deleted}), file name to be used when saved for database import (\code{file_id}) and a data frame containing row numbers of duplicates in the original Excel sheet (\code{$duplicates}).
@@ -57,17 +62,24 @@ Returns a list of class \code{MetaData} that contains modified meta-data records
 Exports meta-data from Excel files to the format accepted by NPI data managers
 }
 \details{
-All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
+The \strong{\code{\link{guess_colname}}} function is used to search for column names in \code{meta_file} by default. This procedure saves the user from specifying all the required column names (\code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{filtered_volume}, \code{responsible} and \code{comment}). The function works well with tested Excel sheets, but might cause an error if column names are far from tested names.
 
-Columns \code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{filtered_volume}, \code{responsible} and \code{comment} are required. Each of these column arguments have a reasonble "guess" column name (see \strong{Usage}) that should match the column names when read from an Excel file. You can use \code{guess_colnames = TRUE} to make the function guess column names, if they differ somewhat from the original column names listed in \strong{Usage}.
+The easiest solution is to change the column names close to column names listed in Usage (or close to those listed in \code{\link{coln_search_words}}). Alternatively you can list all column names manually. Note that any white space in column names must be denoted by period (\code{.}). All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
+
+\strong{Date conversion} between Excel and R is fairly unstable business as your current locale (i.e. to what time zone your computer is set to) might affect the outcome. The easiest way to convert dates is to enter \code{meta_file} as a character string specifying the Excel file name (and location). This allows the usage of \emph{openxlsx} package's \code{\link[openxlsx]{convertToDateTime}} function, which often reads date-times correctly, given that the dates are entered in a consistent format (this is not always the case in sample logs). 
+
+Another option is to input a data frame already opened from Excel. This option might be necessary when doing changes to the data frame prior passing it through the \code{export_metadata} function. In this case, you have to make sure that \code{date_origin} is correct for your operating system (see \url{https://www.r-bloggers.com/date-formats-in-r/}).
+
+The \code{add_time} argument can be used to add or subtract hours from the output, if the times do not match with those in the Excel sheet. This can be helpful in either cases, if your locale causes an offset between recorded dates.
 }
 \examples{
 \donttest{
 ## Read meta-data and let the function to find errors in it:
 x <- export_metadata("Samplelog MOSJ 2015.xlsx")
 
-## Meta-data reading follows openxlsx syntax:
-x <- export_metadata("GlacierFront_2017_Samplelog_20171024.xlsx", sheet = "SAMPLELOG",
-guess_colnames = TRUE)
+## Meta-data reading follows openxlsx syntax. 
+## You can add columns using the additional argument:
+x <- export_metadata("GlacierFront_2017_Samplelog_20171024.xlsx", 
+sheet = "SAMPLELOG", additional = c(Conveyance = "Sampled.from"))
 }
 }

@@ -3,6 +3,7 @@
 S3method(plot,CDOMdata)
 S3method(print,CDOMdata)
 S3method(print,MetaData)
+export(coln_search_words)
 export(compile_data)
 export(convert_sampling_depths)
 export(export_metadata)

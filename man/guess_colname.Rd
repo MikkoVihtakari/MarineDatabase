@@ -5,18 +5,18 @@
 \title{Guess column names from a list of candidates}
 \usage{
 guess_colname(cols = required_cols, df = dt,
-  candidates = coln_search_word)
+  candidates = coln_search_words)
 }
 \arguments{
 \item{cols}{Character vector of approximate column names to be guessed}
 
 \item{df}{data frame containing column names}
 
-\item{candidates}{a switch argument or a character vector giving the candidates to be used in matching}
+\item{candidates}{a switch argument or a character vector giving the candidates to be used in matching. The \code{\link{coln_search_words}} function is used by default.}
 }
 \description{
 Uses fuzzy matching (\code{\link[base]{agrep}}) to guess (column) names from a list of allowed character strings.
 }
 \author{
-Mikko Vihtakari
+Mikko Vihtakari, Conrad Helgeland
 }
