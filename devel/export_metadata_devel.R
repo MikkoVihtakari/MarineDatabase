@@ -7,13 +7,15 @@ x <- export_metadata(paste0(devel, "Samplelog MOSJ 2015.xlsx"), guess_colnames =
 
 x <- export_metadata(paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"), sheet = "SAMPLELOG", guess_colnames = TRUE)
 
-
+x <- export_metadata(paste0(devel, "test.xlsx"), guess_colnames = TRUE)
  ## Only one origin date. Nice!
 
  # Compare with the Excel sheet. Looks good!
 
 
-
+cols1 <- colnames(read.xlsx(paste0(devel, "Samplelog MOSJ 2015.xlsx"), 1))
+cols2 <- colnames(read.xlsx(paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"), "SAMPLELOG"))
+cols3 <- colnames(read.xlsx(paste0(devel, "test.xlsx"), 1))
 
 #library(stringdist)
 

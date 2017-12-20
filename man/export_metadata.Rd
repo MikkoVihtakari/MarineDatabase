@@ -14,7 +14,7 @@ export_metadata(meta_file, sheet = 1, expedition = "Expedition",
   additional = NULL, guess_colnames = FALSE)
 }
 \arguments{
-\item{meta_file}{File name of the meta-data table. Currently only Excel files are supported.}
+\item{meta_file}{File name of the meta-data table or a data frame containing meta-data. If file name, the file has to have \code{.xlsx} extension.}
 
 \item{sheet}{sheet number or name where meta-data are located. See \code{\link[openxlsx]{read.xlsx}}}
 

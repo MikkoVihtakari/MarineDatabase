@@ -1,6 +1,6 @@
 #' @title Export meta-data to NPI database input format
 #' @description Exports meta-data from Excel files to the format accepted by NPI data managers
-#' @param meta_file File name of the meta-data table. Currently only Excel files are supported.
+#' @param meta_file File name of the meta-data table or a data frame containing meta-data. If file name, the file has to have \code{.xlsx} extension.
 #' @param sheet sheet number or name where meta-data are located. See \code{\link[openxlsx]{read.xlsx}}
 #' @param expedition Column name specifying the name of the expedition.
 #' @param station Column name specifying the station name.
@@ -38,17 +38,26 @@
 
 #meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE#; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
 
+#meta_file = paste0(devel, "test.xlsx"); sheet = 1; guess_colnames = TRUE; additional = NULL
+
+
 export_metadata <- function(meta_file, sheet = 1, expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment", additional = NULL, guess_colnames = FALSE) {
 
 ## File handling ####
-  
-file_ext <- get_file_ext(meta_file)
 
-if(file_ext %in% c("xlsx", "xls")) {
-  dt <- read.xlsx(meta_file, sheet = sheet)
+if(is.data.frame(meta_file)) {
+  dt <- meta_file
+  file_ext <- NA
 } else {
-  stop("Other read methods than Excel have not been implemented yet")
+  file_ext <- get_file_ext(meta_file)
+
+  if(file_ext %in% c("xlsx", "xls")) {
+    dt <- read.xlsx(meta_file, sheet = sheet)
+  } else {
+    stop("Other read methods than Excel have not been implemented yet")
+  }
 }
+    
 
 required_cols <- c("expedition", "station", "type", "sample_name", "longitude", "latitude", "date", "bottom_depth", "gear", "from", "to", "filtered_volume", "responsible", "comment")
 
@@ -107,7 +116,7 @@ if(nlevels(dt) > 1) warning("There are several levels for expedition in the meta
 
 if(any(duplicated(tolower(levels(dt$station))))) warning("Station names may contain typos. Check the station names from the output.")
 
-## Sample type ####
+## Sample type 
 
 #data(sample_types)
 
@@ -142,7 +151,7 @@ removed$gear <- factor(removed$gear)
 dt <- original[!is.na(original$temp_type2),]
 dt$type <- factor(dt$temp_type2)
 
-## Warn about sample names that do not contain enough 0s ####
+## Warn about sample names that do not contain enough 0s 
 
 tmp <- strsplit(as.character(dt$sample_name), split = "-")
 index <- unlist(lapply(tmp, function(k) nchar(gsub("[[:alpha:]]", "", k[2]))))
@@ -191,9 +200,12 @@ tp <- lapply(1:nrow(dt), function(i) {
       temp_gear <- TYPES[TYPES$code == "CTM", "gear_type"]
     } else {
     
+      if(tmp$gear == "Ice corer 14cm") tmp$gear <-  "Ice corer 14 cm"
+      if(tmp$gear == "Ice corer 9cm") tmp$gear <- "Ice corer 9 cm"
+        
       if(!as.character(tmp$gear) %in% GEAR$gear) {
         
-        temp_gear <- agrep(tmp$gear, GEAR$gear, value = TRUE)
+              temp_gear <- agrep(tmp$gear, GEAR$gear, value = TRUE)
 
       # Exceptions
           if(tmp$gear == "Multinet") temp_gear <- grep("200", temp_gear, value = TRUE)
@@ -308,10 +320,10 @@ coln_search_word <- function(column) {
   gear = "gear",
   from = "depth m from",
   to = "depth m to",
-  filtered_volume = "volume",
+  filtered_volume = "(filtered|filtration).volume",
   type = "type",
   responsible = "person",
   comment = "comment",
-  stop(paste(fn, "column type not set"))
+  stop(paste(column, "column type not set"))
 )
 }

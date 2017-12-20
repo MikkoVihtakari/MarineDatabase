@@ -11,6 +11,6 @@
 guess_colname <- function(cols = required_cols, df = dt, candidates = coln_search_word) {
   
   sapply(cols, function(k) {
-    colnames(df)[agrep(candidates(k), gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", gsub("[[:punct:]]", " ", colnames(df)), perl = TRUE), ignore.case = TRUE)][1]
+    colnames(df)[grep(candidates(k), gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", gsub("[[:punct:]]", " ", colnames(df)), perl = TRUE), ignore.case = TRUE, perl = TRUE)][1]
   })
 }
