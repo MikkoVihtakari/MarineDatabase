@@ -17,7 +17,6 @@
 #' @param gear Name of the column specifying the sampling gear. See Details.
 #' @param from Name of the column specifying the depth from which sampling was started. See Details.
 #' @param to Name of the column specifying the depth from which sampling was ended. See Details.
-#' @param filtered_volume Name of the column specifying filtered volume in ml for filtered samples. See Details.
 #' @param responsible Name of the column specifying the responsible persons for the sampling. See Details.
 #' @param comment Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column. See Details.
 #' @details The \strong{\code{\link{guess_colname}}} function is used to search for column names in \code{meta_file} by default. This procedure saves the user from specifying all the required column names (\code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{filtered_volume}, \code{responsible} and \code{comment}). The function works well with tested Excel sheets, but might cause an error if column names are far from tested names.
@@ -31,6 +30,8 @@
 #' The \code{add_time} argument can be used to add or subtract hours from the output, if the times do not match with those in the Excel sheet. This can be helpful in either cases, if your locale causes an offset between recorded dates. 
 #' 
 #' @return Returns a list of class \code{MetaData} that contains modified meta-data records (\code{$meta}), removed meta-data records (\code{$deleted}), file name to be used when saved for database import (\code{file_id}) and a data frame containing row numbers of duplicates in the original Excel sheet (\code{$duplicates}).
+#' 
+#' \strong{Dates} (\code{$meta$date}) are returned as UTC date-time in ISO 8601 format.
 #' @examples \donttest{
 #' ## Read meta-data and let the function to find errors in it:
 #' x <- export_metadata("Samplelog MOSJ 2015.xlsx")
@@ -51,7 +52,7 @@
 #meta_file = paste0(devel, "test.xlsx"); sheet = 1; guess_colnames = TRUE; additional = NULL; add_time = 0
 
 
-export_metadata <- function(meta_file, sheet = 1, guess_colnames = TRUE, additional = NULL, add_time = 0, date_origin = "1899-12-30", expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", filtered_volume = "Filtered.volume", responsible = "Responsible.person", comment = "Comment") {
+export_metadata <- function(meta_file, sheet = 1, guess_colnames = TRUE, additional = NULL, add_time = 0, date_origin = "1899-12-30", expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", responsible = "Responsible.person", comment = "Comment") {
 
 ## File handling ####
 
@@ -69,7 +70,7 @@ if(is.data.frame(meta_file)) {
 }
     
 
-required_cols <- c("expedition", "station", "type", "sample_name", "longitude", "latitude", "date", "bottom_depth", "gear", "from", "to", "filtered_volume", "responsible", "comment")
+required_cols <- c("expedition", "station", "type", "sample_name", "longitude", "latitude", "date", "bottom_depth", "gear", "from", "to", "responsible", "comment")
 
 if(!guess_colnames) {
   sapply(required_cols, function(k) {
@@ -103,7 +104,6 @@ dt$sample_name <- trimws(dt$sample_name)
 
 factor.cols <- c("expedition", "station", "type")
 dt[factor.cols] <- lapply(dt[factor.cols], function(k) factor(k))
-#dt <- rapply(object = dt, f = factor, classes = "character", how = "replace")
 
 ## Dates ####
 
@@ -173,7 +173,7 @@ dt$type <- factor(dt$temp_type2)
 tmp <- strsplit(as.character(dt$sample_name), split = "-")
 index <- unlist(lapply(tmp, function(k) nchar(gsub("[[:alpha:]]", "", k[2]))))
 
-old_names <- as.character(dt$sample_name[index != 3])
+old_names <- as.character(dt$sample_name[index < 3])
 
 if(length(old_names) > 0) {
 new_names <- sapply(strsplit(old_names, "-"), function(k) {
@@ -209,6 +209,8 @@ i <- 1
 tp <- lapply(1:nrow(dt), function(i) {
   #print(i)
   tmp <- dt[i,]
+  
+  if(is.na(tmp$gear)) tmp$gear <- "Blank"
   
   if(tmp$temp_type == "CTD") {
     temp_gear <- TYPES[TYPES$code == "CTD", "gear_type"]
@@ -265,12 +267,12 @@ if(!is.numeric(dt$bottom_depth)) {
 
 ## Filtered volume
 
-if(!is.numeric(dt$filtered_volume)) {
-  suppressWarnings(dt$filtered_volume <- as.numeric(as.character(dt$filtered_volume)))
-  message("filtered_volume converted to numeric. NAs maybe produced. Check the data.")
-}
-
-if(any(na.omit(dt$filtered_volume < 10))) warning("Filtered volumes should be given in ml. Values less than 10 ml were found. Are you sure?")
+# if(!is.numeric(dt$filtered_volume)) {
+#   suppressWarnings(dt$filtered_volume <- as.numeric(as.character(dt$filtered_volume)))
+#   message("filtered_volume converted to numeric. NAs maybe produced. Check the data.")
+# }
+# 
+# if(any(na.omit(dt$filtered_volume < 10))) warning("Filtered volumes should be given in ml. Values less than 10 ml were found. Are you sure?")
 
 ## Responsible
 

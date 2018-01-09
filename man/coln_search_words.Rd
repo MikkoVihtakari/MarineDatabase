@@ -4,16 +4,18 @@
 \alias{coln_search_words}
 \title{A list of search words used to find column names in Excel sheets}
 \usage{
-coln_search_words(column)
+coln_search_words(column, return_name = FALSE)
 }
 \arguments{
 \item{column}{A required column name as character string}
+
+\item{return_name}{Logical. Should name of \code{column} be returned instead of value from the list? Used in internal conditional functions.}
 }
 \description{
-A switch list containing search words used in \code{guess_colname} function
+A list containing search words used in \code{\link{guess_colname}} function.
 }
 \details{
-The function accepts following required column names: \code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{filtered_volume}, \code{responsible} and \code{comment}.
+The function accepts following required column names: \code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{responsible} and \code{comment}.
 }
 \author{
 Mikko Vihtakari, Conrad Helgeland

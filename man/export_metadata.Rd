@@ -11,8 +11,7 @@ export_metadata(meta_file, sheet = 1, guess_colnames = TRUE,
   latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)",
   bottom_depth = "Bottom.depth.(m)", gear = "Gear",
   from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to",
-  filtered_volume = "Filtered.volume", responsible = "Responsible.person",
-  comment = "Comment")
+  responsible = "Responsible.person", comment = "Comment")
 }
 \arguments{
 \item{meta_file}{File name of the meta-data table or a data frame containing meta-data. If file name, the file has to have \code{.xlsx} extension.}
@@ -49,14 +48,14 @@ export_metadata(meta_file, sheet = 1, guess_colnames = TRUE,
 
 \item{to}{Name of the column specifying the depth from which sampling was ended. See Details.}
 
-\item{filtered_volume}{Name of the column specifying filtered volume in ml for filtered samples. See Details.}
-
 \item{responsible}{Name of the column specifying the responsible persons for the sampling. See Details.}
 
 \item{comment}{Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column. See Details.}
 }
 \value{
 Returns a list of class \code{MetaData} that contains modified meta-data records (\code{$meta}), removed meta-data records (\code{$deleted}), file name to be used when saved for database import (\code{file_id}) and a data frame containing row numbers of duplicates in the original Excel sheet (\code{$duplicates}).
+
+\strong{Dates} (\code{$meta$date}) are returned as UTC date-time in ISO 8601 format.
 }
 \description{
 Exports meta-data from Excel files to the format accepted by NPI data managers

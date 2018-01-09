@@ -23,6 +23,10 @@ cols3 <- c("Expedition", "Sample.name", "Program", "Ship", "Floe", "Station",
 "Total.melted.volume..ml.", "Salinity", "Filtered.volume..ml.", 
 "Comment.Anette", "X27", "X28", "X29", "X30", "X31")
 
+cols4 <- c("expedition", "station", "type", "sample_name", "longitude", 
+"latitude", "date", "bottom_depth", "gear", "from", "to", "responsible", 
+"comment", "ice", "snow", "melt_volume")
+
 required_cols <- c("expedition", "station", "type", "sample_name",
  "longitude", "latitude", "date", "bottom_depth", "gear", "from", "to",
  "filtered_volume", "responsible", "comment")
@@ -37,7 +41,7 @@ search_words <- function(column) {
   bottom_depth = "bottom depth",
   date = "date",
   gear = "gear",
-  from = "depth m from",
+  from = "(depth|depth m from)",
   to = "depth m to",
   filtered_volume = "(filtered|filtration).volume",
   type = "type",
@@ -47,7 +51,7 @@ search_words <- function(column) {
 )
 }
 
-agrep("(filtered|filtration).volume", gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", gsub("[[:punct:]]", " ", cols1), perl = TRUE), ignore.case = TRUE, value = TRUE, max = 5, fixed = FALSE)[1]
+agrep("depth m from", gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", gsub("[[:punct:]]", " ", cols4), perl = TRUE), ignore.case = TRUE, value = TRUE, max = 5, fixed = FALSE)[1]
 
 grep("(filtered|filtration).volume", gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", gsub("[[:punct:]]", " ", cols3), perl = TRUE), ignore.case = TRUE, value = TRUE, perl = TRUE)
 
@@ -67,3 +71,5 @@ agrep(candidates(k), gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", gsub("[[:punct:]]", 
 guess_colname(original_cols = cols1)
 guess_colname(original_cols = cols2)
 guess_colname(original_cols = cols3)
+guess_colname(original_cols = cols4)
+
