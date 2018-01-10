@@ -84,7 +84,7 @@ make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.
   spls$search_term <- gsub("\\([^\\)]*\\)", "", spls$search_term, perl = TRUE) 
 
   # remove all cysts, spores, etc.
-  spls$search_term <- gsub("\\scyst\\b|\\s\\b\\w+cyst\\b|\\scysts\\b|\\s\\b\\w+cysts\\b|\\sspore\\b|\\sspores\\b|\\s\\b\\w+spore\\b|\\s\\b\\w+spores\\b|\\spollen\\b|\\bcysta\\b|\\bspora\\b|\\bsymbiont\\b", 
+  spls$search_term <- gsub("\\scyst\\b|\\s\\b\\w+cyst\\b|\\scysts\\b|\\s\\b\\w+cysts\\b|\\sspore\\b|\\sspores\\b|\\s\\b\\w+spore\\b|\\s\\b\\w+spores\\b|\\spollen\\b|\\bcysta\\b|\\bspora\\b|\\bsymbiont\\b|\\bendosymbiont\\w\\b", 
     "", spls$search_term, perl = TRUE, ignore.case = TRUE) 
 
   # remove numbers
@@ -97,7 +97,7 @@ make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.
   spls$search_term <- gsub("(\\ssp.\\s)|(\\ssp.$)", " spp.", spls$search_term, perl = TRUE) 
   
     # Remove descriptive words
-  spls$search_term <- gsub("(large\\s)|(round\\s)|(naked\\s)|(tiny\\s)|(wide\\s)|(thin\\s)|(oval\\s)|(shaped\\s)|(thecate\\s)|(bean-shaped\\s)|(-like$)|(\\sin\\sribbon\\b)", "", spls$search_term, perl = TRUE, ignore.case = TRUE)
+  spls$search_term <- gsub("(large\\s)|(round\\s)|(naked\\s)|(tiny\\s)|(wide\\s)|(thin\\s)|(oval\\s)|(shaped\\s)|(thecate\\s)|(bean-shaped\\s)|(-like$)|(\\sin\\sribbon\\b)|(deformed\\s)|(\\bwith\\b)", "", spls$search_term, perl = TRUE, ignore.case = TRUE)
   
   # Replace common names etc.
   spls$search_term <- gsub("(dino\\s)|(dinos\\s)|(dino$)|(dinos$)", "Dinoflagellata", spls$search_term, perl = TRUE, ignore.case = TRUE)
@@ -136,7 +136,7 @@ make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.
   # Replace unknowns by NA
   spls$certainty[tolower(spls$search_term) %in% c("unknown", "incertain taxa", "incertains taxa", "unknown taxon")] <- "unknown"
   
-  spls$search_term[tolower(spls$search_term) %in% c("unknown", "incertain taxa", "incertains taxa", "unknown taxon")] <- NA
+  spls$search_term[tolower(spls$search_term) %in% c("unknown", "incertain taxa", "incertains taxa", "unknown taxon", "fecal pellets")] <- NA
   
   # remove extra white space at the end of some words (unknown format, trimws does not always work)
   spls$search_term <- gsub("[[:space:]]$", "", spls$search_term)

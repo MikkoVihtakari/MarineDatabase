@@ -45,12 +45,13 @@
 #' @importFrom lubridate year month day
 #' @export
 
-#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL; guess_colnames = FALSE
+#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL; guess_colnames = FALSE; add_time = 0
 
-#meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE#; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"
+#meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"; additional = NULL; add_time = 0
 
 #meta_file = paste0(devel, "test.xlsx"); sheet = 1; guess_colnames = TRUE; additional = NULL; add_time = 0
 
+#meta_file = meta; guess_colnames = FALSE; latitude = "Lat"; longitude = "Lon"; date = "Date"; from = "Sec.start"; to = "Sec.end"; responsible = "Author"; comment = "Comments"; additional = NULL; add_time = 0;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"
 
 export_metadata <- function(meta_file, sheet = 1, guess_colnames = TRUE, additional = NULL, add_time = 0, date_origin = "1899-12-30", expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", responsible = "Responsible.person", comment = "Comment") {
 
@@ -119,8 +120,13 @@ if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
   dt$date <- strftime(as.POSIXct(dt$temp_date, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
   message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "class assuming", date_origin, "as origin date. Control that dates match with the Excel sheet. You can use add_time to adjust if there is offset."))
   } else {
-  stop("Implement new date conversion. Does not work for these data.")
-}}
+  if(class(dt$date) == "Date") {
+  dt$temp_date <- dt$date + add_time*3600
+  dt$date <- strftime(as.POSIXct(dt$temp_date, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
+  message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "class assuming", date_origin, "as origin date. Control that dates match with the Excel sheet. You can use add_time to adjust if there is offset."))
+  } else {
+  stop("Implement new date conversion. Does not work for these data.")  
+  }}}
 
 ## Expedition 
 
@@ -168,25 +174,37 @@ removed$gear <- factor(removed$gear)
 dt <- original[!is.na(original$temp_type2),]
 dt$type <- factor(dt$temp_type2)
 
+
 ## Warn about sample names that do not contain enough 0s 
+
+dt$temp_sample_name <- dt$sample_name # needed to find duplicate rows from original sheet
 
 tmp <- strsplit(as.character(dt$sample_name), split = "-")
 index <- unlist(lapply(tmp, function(k) nchar(gsub("[[:alpha:]]", "", k[2]))))
 
-old_names <- as.character(dt$sample_name[index < 3])
-
-if(length(old_names) > 0) {
-new_names <- sapply(strsplit(old_names, "-"), function(k) {
-    k[2] <- ifelse(nchar(k[2]) == 1, paste0("00", k[2]), ifelse(nchar(k[2]) == 2, paste0("0", k[2]), k[2]))
-    paste(k, collapse = "-")
+if(any(index < 3)) {
+  new_names <- sapply(as.character(dt$sample_name), function(k) {
+    
+    tmp <- strsplit(k, split = "-")[[1]]
+    Index <- nchar(gsub("[[:alpha:]]", "", tmp[2]))
+    
+    if(any(Index >= 3, is.na(Index))) {
+      k
+    } else {
+      tmp[2] <- ifelse(nchar(tmp[2]) == 1, paste0("00", tmp[2]), ifelse(nchar(tmp[2]) == 2, paste0("0", tmp[2]), tmp[2]))
+      paste(tmp, collapse = "-")
+    }
+    
   })
-
-levels(dt$sample_name)[levels(dt$sample_name) %in% old_names] <- new_names
-
-message(paste0(length(old_names), " sample_names contained too few numbers (from ", old_names[1], " to ", old_names[length(old_names)], "). Replaced by new names (from ", new_names[1], " to ", new_names[length(new_names)], ")."))
+  if(!identical(as.character(dt$sample_name), names(new_names))) stop("Name conversion does not work.")
+  
+  message(paste0(sum(index < 3, na.rm = TRUE), " sample_names contained too few numbers (from ", dt$sample_name[index < 3][1], " to ", dt$sample_name[index < 3][length(dt$sample_name[index < 3])], "). Replaced by new names (from ", new_names[index < 3][1], " to ", new_names[index < 3][length(new_names[index < 3])], ")."))
+  
+  dt$sample_name <- unname(new_names)
 }
 
 dt$sample_name <- factor(dt$sample_name)
+
 
 ## Coordinates
 
@@ -213,14 +231,23 @@ tp <- lapply(1:nrow(dt), function(i) {
   if(is.na(tmp$gear)) tmp$gear <- "Blank"
   
   if(tmp$temp_type == "CTD") {
-    temp_gear <- TYPES[TYPES$code == "CTD", "gear_type"]
-  } else {
-    if(tmp$temp_type == "CTM") {
-      temp_gear <- TYPES[TYPES$code == "CTM", "gear_type"]
-    } else {
     
-      if(tmp$gear == "Ice corer 14cm") tmp$gear <-  "Ice corer 14 cm"
-      if(tmp$gear == "Ice corer 9cm") tmp$gear <- "Ice corer 9 cm"
+    temp_gear <- TYPES[TYPES$code == "CTD", "gear_type"]
+  
+    } else {
+    if(tmp$temp_type == "CTM") {
+      
+      temp_gear <- TYPES[TYPES$code == "CTM", "gear_type"]
+      
+    } else {
+    if(grepl("Ice core", tmp$gear)) {
+      
+      temp_gear <- grep(gsub("\\D*", "", tmp$gear, perl = TRUE), grep("Ice core", GEAR$gear, value = TRUE), value = TRUE)
+      if(length(temp_gear) == 0) stop("Ice corer diameter not found. Check and add to the list.")
+      
+    } else {      
+      #if(tmp$gear == "Ice corer 14cm") tmp$gear <- "Ice corer 14 cm"
+      #if(tmp$gear == "Ice corer 9cm") tmp$gear <- "Ice corer 9 cm"
         
       if(!as.character(tmp$gear) %in% GEAR$gear) {
         
@@ -229,11 +256,21 @@ tp <- lapply(1:nrow(dt), function(i) {
       # Exceptions
           if(tmp$gear == "Multinet") temp_gear <- grep("200", temp_gear, value = TRUE)
           if(length(temp_gear) != 1) temp_gear <- agrep(gsub("[[:punct:]]", " ", tmp$gear), GEAR$gear, value = TRUE)
-          if(length(temp_gear) != 1 & length(TYPES[TYPES$code == tmp$temp_type, "gear_type"]) != 0) temp_gear <- TYPES[TYPES$code == tmp$temp_type, "gear_type"]
+          if(length(temp_gear) != 1 & length(TYPES[TYPES$code == tmp$temp_type, "gear_type"]) != 0) {
+            candidates <- trimws(unlist(strsplit(TYPES[TYPES$code == tmp$temp_type, "gear_type"], "\\;")))
+            result <- agrep(tmp$gear, candidates, value = TRUE)
+            
+            if(length(result) == 0) {
+              temp_gear <- candidates[1]
+              #message(paste0("Gear guessed for ", tmp$sample_name))
+            } else {
+              temp_gear <- result[1]
+            }
+          }
           if(length(temp_gear) != 1) stop(paste("Fuzzy matching", tmp$gear, "does not work for row", i))    
   } else {
     temp_gear <- tmp$gear
-  }}}
+  }}}}
   
     tmp$gear <- temp_gear
     tmp
@@ -282,7 +319,7 @@ dt$responsible <- as.character(dt$responsible)
 
 if(any(duplicated(dt[c("expedition", "sample_name")]))) {
 
-  dups <- as.character(dt$sample_name[duplicated(dt[c("expedition", "sample_name")])])
+  dups <- as.character(dt$temp_sample_name[duplicated(dt[c("expedition", "sample_name")])])
   dup_dat <- original[original$sample_name %in% dups, c("sample_name", "type", "station")]
   dup_dat$row_number <- as.numeric(rownames(dup_dat)) +1
   dup_dat <-  dup_dat[order(dup_dat$sample_name),]
