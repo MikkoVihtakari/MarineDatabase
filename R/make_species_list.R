@@ -1,17 +1,29 @@
 #' @title Generate a species list containing unique levels from a taxonomy dataset
-#' @description Generate a data frame containing unique species names, summed abundances and search terms to be used in XXX
-#' @param dat data frame containing taxonomy information. Must be in long format.
+#' @description Generate a data frame containing unique species names, summed abundances and search terms to be used by \code{\link{confirm_species_list}}.
+#' @param dat Data frame containing taxonomy information. Must be in long format.
 #' @param sp.col Character specifying the column name that contains species names in \code{dat}.
 #' @param ab.col Character specifying the column name that contains species abundances in \code{dat}.
 #' @param st.col Character specifying the column name that contains station names in \code{dat}.
-#' @param expedition Character specifying the column name that contains expedition in \code{dat}. Not required. Defaults to \code{NA}.
-#' @return Returns a list containing a data frame (\code{$species_list}) the original species names (as unique levels in \code{dat}; or_name), summed abundance (ab), number of stations where the species name was encountered (n), total number of station (N), a tidied search term for XXX function (search_term), type of species (spores and epiphytes are separated, otherwise \code{NA}; type) and certainty of species identification (includes sp., spp., aff. and cf.; certainty)
+#' @param exp.col Character specifying the column name that contains expedition in \code{dat}. 
+#' @return Returns \code{speciesList} object containing a list of unique species entries in \code{dat} (\code{$data}) and summary information (\code{$sum_info}). \code{$data} contains following columns:
+#' \itemize{
+#'  \item \strong{\code{or_name}} The original species names (as unique levels in \code{dat}).
+#'  \item \strong{\code{expedition}} Expeditions during which the species occurred. Several expeditions are separated by \code{;}.
+#'  \item \strong{\code{ab}} Summed abundance for a species entry.
+#'  \item \strong{\code{n}} Number of stations where the species name was encountered (n)
+#'  \item \strong{\code{perAb}} Summed abundance for a species entry as a percentage of total summed abundance (\code{$sum_info$abSum}).
+#'  \item \strong{\code{fo}} Frequency of occurrence for a species entry (total number of stations is given in \code{$sum_info$N}).
+#'  \item \strong{\code{search_term}} A tidied search term for \code{\link{confirm_species_list}} function.
+#'  \item \strong{\code{type}} Type of species (spores, symbionts and epiphytes are separated, otherwise \code{NA}).
+#'  \item \strong{\code{certainty}} Certainty of species identification (includes sp., spp., aff., cf. and unknown).
+#'  }
 #' @author Mikko Vihtakari
+#' @seealso \code{\link{confirm_species_list}} for confirming the species names against a database.
 #' @export
 
-#dat = dat; sp.col = "species"; ab.col = "abundance"; st.col = "station"; expedition = "ICE2011"; additional = NULL
+#dat = dat; sp.col = "species"; ab.col = "abundance"; st.col = "station"; exp.col = "expedition"
 
-make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.col = "station", expedition = NA) {
+make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.col = "station", exp.col = "expedition") {
 
   ## Section start ####
   if(!is.factor(dat[[st.col]])) dat[[st.col]] <- factor(dat[[st.col]])
@@ -19,7 +31,7 @@ make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.
   
   ## Summarized information
   
-  sum.info <- data.frame(expedition = expedition, N = nlevels(dat[[st.col]]), abSum = sum(dat[[ab.col]], na.rm = TRUE))
+  sum.info <- data.frame(N = nlevels(dat[[st.col]]), abSum = sum(dat[[ab.col]], na.rm = TRUE))
   
   ## Original unique names, abundances and frequency of occurrence
   
@@ -28,20 +40,20 @@ make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.
     tp <- k[!is.na(k[[ab.col]]),]
     tp <- tp[tp[[ab.col]] > 0,]
   
-    out <- data.frame(or_name = as.character(unique(k[[sp.col]])), ab = sum(k[[ab.col]], na.rm = TRUE), n = length(as.character(unique(tp[[st.col]]))))
+    out <- data.frame(or_name = as.character(unique(k[[sp.col]])), expedition = paste(unique(k[[exp.col]]), collapse = "; "), ab = sum(k[[ab.col]], na.rm = TRUE), n = length(as.character(unique(tp[[st.col]]))))
     out$perAb <- 100*out$ab/sum.info$abSum
     out$fo <- 100*out$n/sum.info$N
     out
   })
   
   spls <- do.call(rbind, tmp)
-  
+
+  spls <- rapply(object = spls, f = as.character, classes = "factor", how = "replace")
+    
   spls <- spls[order(spls$or_name),]
   row.names(spls) <- 1:nrow(spls)
 
   ## Add search term and modify it ###
-
-  spls <- rapply(object = spls, f = as.character, classes = "factor", how = "replace")
 
   spls$search_term <- spls$or_name
 
@@ -131,6 +143,11 @@ make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.
   
   # only first word as capital letter
   spls$search_term <- gsub("(^\\w)", "\\U\\1", tolower(spls$search_term), perl=TRUE)
+
+  ## Change species names that the search cannot handle
+
+  spls$search_term[spls$search_term %in% "Gymnodinium wulfii"] <- "Gyrodinium wulffii"
+  spls$search_term[spls$search_term %in% "Myrionecta rubra"] <- "Mesodinium rubrum"
 
   ## Species list column classes
   

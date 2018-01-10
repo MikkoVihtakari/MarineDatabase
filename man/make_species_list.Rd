@@ -5,10 +5,10 @@
 \title{Generate a species list containing unique levels from a taxonomy dataset}
 \usage{
 make_species_list(dat, sp.col = "species", ab.col = "abundance",
-  st.col = "station", expedition = NA)
+  st.col = "station", exp.col = "expedition")
 }
 \arguments{
-\item{dat}{data frame containing taxonomy information. Must be in long format.}
+\item{dat}{Data frame containing taxonomy information. Must be in long format.}
 
 \item{sp.col}{Character specifying the column name that contains species names in \code{dat}.}
 
@@ -16,13 +16,27 @@ make_species_list(dat, sp.col = "species", ab.col = "abundance",
 
 \item{st.col}{Character specifying the column name that contains station names in \code{dat}.}
 
-\item{expedition}{Character specifying the column name that contains expedition in \code{dat}. Not required. Defaults to \code{NA}.}
+\item{exp.col}{Character specifying the column name that contains expedition in \code{dat}.}
 }
 \value{
-Returns a list containing a data frame (\code{$species_list}) the original species names (as unique levels in \code{dat}; or_name), summed abundance (ab), number of stations where the species name was encountered (n), total number of station (N), a tidied search term for XXX function (search_term), type of species (spores and epiphytes are separated, otherwise \code{NA}; type) and certainty of species identification (includes sp., spp., aff. and cf.; certainty)
+Returns \code{speciesList} object containing a list of unique species entries in \code{dat} (\code{$data}) and summary information (\code{$sum_info}). \code{$data} contains following columns:
+\itemize{
+ \item \strong{\code{or_name}} The original species names (as unique levels in \code{dat}).
+ \item \strong{\code{expedition}} Expeditions during which the species occurred. Several expeditions are separated by \code{;}.
+ \item \strong{\code{ab}} Summed abundance for a species entry.
+ \item \strong{\code{n}} Number of stations where the species name was encountered (n)
+ \item \strong{\code{perAb}} Summed abundance for a species entry as a percentage of total summed abundance (\code{$sum_info$abSum}).
+ \item \strong{\code{fo}} Frequency of occurrence for a species entry (total number of stations is given in \code{$sum_info$N}).
+ \item \strong{\code{search_term}} A tidied search term for \code{\link{confirm_species_list}} function.
+ \item \strong{\code{type}} Type of species (spores, symbionts and epiphytes are separated, otherwise \code{NA}).
+ \item \strong{\code{certainty}} Certainty of species identification (includes sp., spp., aff., cf. and unknown).
+ }
 }
 \description{
-Generate a data frame containing unique species names, summed abundances and search terms to be used in XXX
+Generate a data frame containing unique species names, summed abundances and search terms to be used by \code{\link{confirm_species_list}}.
+}
+\seealso{
+\code{\link{confirm_species_list}} for confirming the species names against a database.
 }
 \author{
 Mikko Vihtakari

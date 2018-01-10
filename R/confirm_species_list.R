@@ -34,11 +34,6 @@ sps <- unique(as.character(spls$search_term))
 
 sps <- sps[!is.na(sps)]
 
-## Change species names that the search cannot handle
-
-sps[sps %in% "Gymnodinium wulfii"] <- "Gyrodinium wulffii"
-sps[sps %in% "Myrionecta rubra"] <- "Mesodinium rubrum"
-
 ## Order alphabetically
 
 sps <- sps[order(sps)]
