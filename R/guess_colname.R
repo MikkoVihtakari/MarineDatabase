@@ -6,7 +6,7 @@
 #' @author Mikko Vihtakari, Conrad Helgeland
 #' @export
 
-# cols = sample_name; df = df; candidates = 
+# cols = required_cols; df = dt; candidates = coln_search_words
 
 guess_colname <- function(cols = required_cols, df = dt, candidates = coln_search_words) {
   

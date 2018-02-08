@@ -19,7 +19,7 @@
 #' @param to Name of the column specifying the depth from which sampling was ended. See Details.
 #' @param responsible Name of the column specifying the responsible persons for the sampling. See Details.
 #' @param comment Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column. See Details.
-#' @details The \strong{\code{\link{guess_colname}}} function is used to search for column names in \code{meta_file} by default. This procedure saves the user from specifying all the required column names (\code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{responsible} and \code{comment}). The function works well with tested Excel sheets, but might cause an error if column names are far from tested names.
+#' @details The \strong{\code{\link{guess_colname}}} function is used to search for column names in \code{meta_file} by default. This procedure saves the user from specifying all the required column names (\code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{responsible} and \code{comment}). The function works well with tested Excel sheets, but might cause an error if column names are far from tested names. Modify \code{\link{coln_search_words}} in such case (guessing is done using regular expressions).
 #' 
 #' The easiest solution is to change the column names close to column names listed in Usage (or close to those listed in \code{\link{coln_search_words}}). Alternatively you can list all column names manually. Note that any white space in column names must be denoted by period (\code{.}). All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
 #' 
@@ -45,15 +45,9 @@
 #' @importFrom lubridate year month day
 #' @export
 
-#meta_file = paste0(devel, "Samplelog MOSJ 2015.xlsx") ;sheet = 1 ;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; longitude = "Longitude.(decimals)"; latitude = "Latitude.(decimals)"; date = "Sampling.date.(UTC)"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"; from = "Sampling.depth.(m).from"; to = "Sampling.depth.(m).to"; filtered_volume = "Filtered.volume"; responsible = "Responsible.person"; comment = "Comment"; additional = NULL; guess_colnames = FALSE; add_time = 0
+# additional = NULL; add_time = 0; date_origin = "1899-12-30"; expedition = NULL; station = NULL; type = NULL; sample_name = NULL; longitude = NULL; latitude = NULL; date = NULL; bottom_depth = NULL; gear = NULL; from = NULL; to = NULL; responsible = NULL; comment = NULL; guess_colnames = TRUE
 
-#meta_file = paste0(twice, "GlacierFront_2017_Samplelog_20171211.xlsx"); sheet = "SAMPLELOG"; guess_colnames = TRUE; filtered_volume = "Filtration.volume.(ml)"; responsible = "Contact.person"; additional = NULL; add_time = 0
-
-#meta_file = paste0(devel, "test.xlsx"); sheet = 1; guess_colnames = TRUE; additional = NULL; add_time = 0
-
-#meta_file = meta; guess_colnames = FALSE; latitude = "Lat"; longitude = "Lon"; date = "Date"; from = "Sec.start"; to = "Sec.end"; responsible = "Author"; comment = "Comments"; additional = NULL; add_time = 0;expedition = "Expedition"; station = "Station"; type = "Sample.type"; sample_name = "Sample.name"; bottom_depth = "Bottom.depth.(m)"; gear = "Gear"
-
-export_metadata <- function(meta_file, sheet = 1, guess_colnames = TRUE, additional = NULL, add_time = 0, date_origin = "1899-12-30", expedition = "Expedition", station = "Station", type = "Sample.type", sample_name = "Sample.name", longitude = "Longitude.(decimals)", latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)", bottom_depth = "Bottom.depth.(m)", gear = "Gear", from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to", responsible = "Responsible.person", comment = "Comment") {
+export_metadata <- function(meta_file, sheet = 1, additional = NULL, add_time = 0, date_origin = "1899-12-30", expedition = NULL, station = NULL, type = NULL, sample_name = NULL, longitude = NULL, latitude = NULL, date = NULL, bottom_depth = NULL, gear = NULL, from = NULL, to = NULL, responsible = NULL, comment = NULL, guess_colnames = TRUE) {
 
 ## File handling ####
 
@@ -64,7 +58,7 @@ if(is.data.frame(meta_file)) {
   file_ext <- get_file_ext(meta_file)
 
   if(file_ext %in% c("xlsx", "xls")) {
-    dt <- read.xlsx(meta_file, sheet = sheet)
+    dt <- openxlsx::read.xlsx(meta_file, sheet = sheet)
   } else {
     stop("Other read methods than Excel have not been implemented yet")
   }
@@ -75,10 +69,12 @@ required_cols <- c("expedition", "station", "type", "sample_name", "longitude", 
 
 if(!guess_colnames) {
   sapply(required_cols, function(k) {
-  if(!get(k) %in% colnames(dt)) {
-    stop(paste(k, "was not found from column names of dt. Check column name specifications or add the column."))
-  }
-})
+    if(is.null(get(k))) {
+      stop(paste(k, "is not defined. All required columns have to be defined, if guess_colnames = FALSE"))
+    } else if(!get(k) %in% colnames(dt)) {
+        stop(paste(k, "was not found from column names of dt. Check column name specifications or add the column."))
+    }
+  })
 }
 
 ## Quality flag to whether meta-data can be merged with data
@@ -86,11 +82,38 @@ if(!guess_colnames) {
 quality.flag <- TRUE
 dups <- NULL
 dup.rows <- NULL
+old.data.format <- FALSE
 
 ## Structure
 
 if(guess_colnames) {
-  dt <- dt[c(unname(guess_colname(required_cols, dt)), unname(additional))]
+  def_cols <- unname(sapply(required_cols, function(k) !is.null(get(k))))
+  
+  if(any(def_cols)) {
+    guess_cols <- required_cols[!def_cols]
+    
+    dc <- sapply(required_cols[def_cols], function(k) get(k))
+    dc2 <- guess_colname(guess_cols, dt)
+    
+    dc_all <- c(dc, dc2)
+    dc_all <- dc_all[required_cols]
+    
+    if(any(is.na(dc_all))) {
+      stop(paste(required_cols[is.na(dc_all)], collapse = ", "), " column was not found. It is required.")
+    }
+    
+    dt <- dt[c(unname(dc_all), unname(additional))]
+  
+    } else {
+    
+    dc_all <- guess_colname(required_cols, dt)
+    
+    if(any(is.na(dc_all))) {
+      stop(paste(required_cols[is.na(dc_all)], collapse = ", "), " column was not found. It is required.")
+    }
+    
+    dt <- dt[c(unname(dc_all), unname(additional))]
+  }
 } else {
  dt <- dt[c(unname(sapply(required_cols, function(k) get(k))), unname(additional))]
 }
@@ -109,10 +132,10 @@ dt[factor.cols] <- lapply(dt[factor.cols], function(k) factor(k))
 ## Dates ####
 
 if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
-  dt$temp_date <- convertToDateTime(dt$date, tz = "UTC")
+  dt$temp_date <- openxlsx::convertToDateTime(dt$date, tz = "UTC")
   dt$temp_date <- dt$temp_date + add_time*3600
   dt$date <- strftime(as.POSIXct(dt$temp_date, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
-  message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "assuming", getDateOrigin(meta_file), "as origin date. Control that dates match with the Excel sheet. You can use add_time to adjust if there is offset."))
+  message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "assuming", openxlsx::getDateOrigin(meta_file), "as origin date. Control that dates match with the Excel sheet. You can use add_time to adjust if there is offset."))
 } else {
   if(is.numeric(dt$date)) {
   dt$temp_date <- as.POSIXct(as.numeric(dt$date) * (60*60*24), tz = "UTC", origin = date_origin)
@@ -125,8 +148,55 @@ if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
   dt$date <- strftime(as.POSIXct(dt$temp_date, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
   message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "class assuming", date_origin, "as origin date. Control that dates match with the Excel sheet. You can use add_time to adjust if there is offset."))
   } else {
+    
+  ## If date is character (meaning there are typos), try to fix them
+  if(class(dt$date) == "character") {
+  temp_date <- suppressWarnings(is.na(as.numeric(dt$date)))
+  if(any(temp_date)) {
+    
+    temp_date <- lapply(dt$date, function(k) {
+      if(grepl("UTC", k)) {
+        out <- strptime(k, format = "%Y-%m-%d %H:%M", tz = "UTC")
+        out <- out + add_time*3600
+       
+      } else {
+        out <- strptime(k, format = "%d.%m.%Y %H:%M", tz = "UTC")
+        out <- out + add_time*3600
+      } 
+      
+        if(is.na(out)) { #last save
+        out <- as.POSIXct(as.numeric(k) * (60*60*24), tz = "UTC", origin = date_origin)
+        out <- out + add_time*3600
+        }
+          
+       strftime(as.POSIXct(out, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
+      
+      })
+    
+  temp_date <- unlist(temp_date)
+    
+  if(any(is.na(temp_date))) { 
+  warning("Typo in date format for records ", paste(unique(dt$date[is.na(temp_date)]), collapse = ", "), " on rows ", paste(which(is.na(temp_date)), collapse = ", "), ". NAs produced.")
+  
+  dt$date <- temp_date  
+    
+  } else {
+    
+    dt$date <- temp_date
+  message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "class. Control that dates match with the Excel sheet. You can use add_time to adjust if there is offset."))
+  
+  }} else {
+  dt$temp_date <- as.POSIXct(as.numeric(dt$date) * (60*60*24), tz = "UTC", origin = date_origin)
+  dt$temp_date <- dt$temp_date + add_time*3600
+  dt$date <- strftime(as.POSIXct(dt$temp_date, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
+  message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "class assuming", date_origin, "as origin date. Control that dates match with the Excel sheet. You can use add_time to adjust if there is offset."))  
+  }
+    
+  } else {
   stop("Implement new date conversion. Does not work for these data.")  
-  }}}
+
+}}}}
+
 
 ## Expedition 
 
@@ -140,8 +210,6 @@ if(nlevels(dt) > 1) warning("There are several levels for expedition in the meta
 if(any(duplicated(tolower(levels(dt$station))))) warning("Station names may contain typos. Check the station names from the output.")
 
 ## Sample type 
-
-#data(sample_types)
 
 dt$temp_type <- MarineDatabase::select(strsplit(as.character(dt$sample_name), "\\-"), 1)
 
@@ -166,23 +234,33 @@ tp <- lapply(1:nrow(dt), function(i) {
 
 original <- do.call(rbind, tp)
 
-removed <- original[is.na(original$temp_type2),]
-removed <- removed[-grep("temp", colnames(removed))]
-removed$sample_name <- factor(removed$sample_name)
-removed$gear <- factor(removed$gear)
+if(all(is.na(original$temp_type2))) {
+  message("Sample codes are not according to the standard. Old data format? Sanity checks reduced.")
+  dt <- original
+  removed <- original[0,]
+  old.data.format <- TRUE
+} else {
+  removed <- original[is.na(original$temp_type2),]
+  removed <- removed[-grep("temp", colnames(removed))]
+  removed$sample_name <- factor(removed$sample_name)
+  removed$gear <- factor(removed$gear)
   
-dt <- original[!is.na(original$temp_type2),]
-dt$type <- factor(dt$temp_type2)
-
+  dt <- original[!is.na(original$temp_type2),]
+  dt$type <- factor(dt$temp_type2)
+}
 
 ## Warn about sample names that do not contain enough 0s 
+
+if(!old.data.format) {
 
 dt$temp_sample_name <- dt$sample_name # needed to find duplicate rows from original sheet
 
 tmp <- strsplit(as.character(dt$sample_name), split = "-")
 index <- unlist(lapply(tmp, function(k) nchar(gsub("[[:alpha:]]", "", k[2]))))
 
-if(any(index < 3)) {
+if(any(is.na(index))) warning(length(dt$sample_name[is.na(index)]), " sample_names (", paste(unique(dt$sample_name[is.na(index)]), collapse=", "), ") are missing sample number.")
+
+if(any(index[!is.na(index)] < 3)) {
   new_names <- sapply(as.character(dt$sample_name), function(k) {
     
     tmp <- strsplit(k, split = "-")[[1]]
@@ -201,6 +279,8 @@ if(any(index < 3)) {
   message(paste0(sum(index < 3, na.rm = TRUE), " sample_names contained too few numbers (from ", dt$sample_name[index < 3][1], " to ", dt$sample_name[index < 3][length(dt$sample_name[index < 3])], "). Replaced by new names (from ", new_names[index < 3][1], " to ", new_names[index < 3][length(new_names[index < 3])], ")."))
   
   dt$sample_name <- unname(new_names)
+}
+
 }
 
 dt$sample_name <- factor(dt$sample_name)
@@ -229,6 +309,10 @@ tp <- lapply(1:nrow(dt), function(i) {
   tmp <- dt[i,]
   
   if(is.na(tmp$gear)) tmp$gear <- "Blank"
+  
+  if(old.data.format & !tmp$temp_type %in% TYPES$code) {
+    temp_gear <- "old"
+  } else {
   
   if(tmp$temp_type == "CTD") {
     
@@ -270,14 +354,17 @@ tp <- lapply(1:nrow(dt), function(i) {
           if(length(temp_gear) != 1) stop(paste("Fuzzy matching", tmp$gear, "does not work for row", i))    
   } else {
     temp_gear <- tmp$gear
-  }}}}
+  }}}}}
   
-    tmp$gear <- temp_gear
-    tmp
+  temp_gear
+  
 })
 
+tp <- unlist(tp)
 
-dt <- do.call(rbind, tp)
+if(any(tp == "old")) message("Old data format. Gear types not standardized")
+
+dt$gear <- ifelse(tp == "old", dt$gear, tp)
 
 dt$gear <- factor(dt$gear)
 

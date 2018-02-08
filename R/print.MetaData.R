@@ -39,5 +39,6 @@ print.MetaData <- function(x, ...) {
   cat(NULL, sep = "\n")
   cat(NULL, sep = "\n")
   cat(paste0("File name: ", x$file_id, ".csv"))
+  cat(NULL, sep = "\n")
   }
 

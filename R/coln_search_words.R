@@ -12,8 +12,8 @@ coln_search_words <- function(column, return_name = FALSE) {
     expedition = "expedition",
     sample_name = "name",
     station = "station",
-    latitude = "latitude decimal",
-    longitude = "longitude decimal",
+    latitude = "(latitude)|(latitude\\sdecimal)",
+    longitude = "(longitude)|(longitude\\sdecimal)",
     bottom_depth = "bottom depth",
     date = "date",
     gear = "gear",
@@ -21,7 +21,7 @@ coln_search_words <- function(column, return_name = FALSE) {
     to = "depth m to",
     #filtered_volume = "(filtered|filtration).volume",
     type = "type",
-    responsible = "person",
+    responsible = "(person)|(responsible)|(contact)",
     comment = "comment")
   
   

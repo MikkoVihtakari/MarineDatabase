@@ -4,21 +4,16 @@
 \alias{export_metadata}
 \title{Export meta-data to NPI database input format}
 \usage{
-export_metadata(meta_file, sheet = 1, guess_colnames = TRUE,
-  additional = NULL, add_time = 0, date_origin = "1899-12-30",
-  expedition = "Expedition", station = "Station", type = "Sample.type",
-  sample_name = "Sample.name", longitude = "Longitude.(decimals)",
-  latitude = "Latitude.(decimals)", date = "Sampling.date.(UTC)",
-  bottom_depth = "Bottom.depth.(m)", gear = "Gear",
-  from = "Sampling.depth.(m).from", to = "Sampling.depth.(m).to",
-  responsible = "Responsible.person", comment = "Comment")
+export_metadata(meta_file, sheet = 1, additional = NULL, add_time = 0,
+  date_origin = "1899-12-30", expedition = NULL, station = NULL,
+  type = NULL, sample_name = NULL, longitude = NULL, latitude = NULL,
+  date = NULL, bottom_depth = NULL, gear = NULL, from = NULL,
+  to = NULL, responsible = NULL, comment = NULL, guess_colnames = TRUE)
 }
 \arguments{
 \item{meta_file}{File name of the meta-data table or a data frame containing meta-data. If file name, the file has to have \code{.xlsx} extension.}
 
 \item{sheet}{sheet number or name where meta-data are located. See \code{\link[openxlsx]{read.xlsx}}}
-
-\item{guess_colnames}{Logical indicating whether \code{\link{guess_colname}} function should be used to search for required column names. Defaults to \code{TRUE}. See Details.}
 
 \item{additional}{Additional columns to be included in meta-data. Must be specified as a named character vector, which lists the exact column names to be included together with exported column names as names of the vector. See Examples.}
 
@@ -51,6 +46,8 @@ export_metadata(meta_file, sheet = 1, guess_colnames = TRUE,
 \item{responsible}{Name of the column specifying the responsible persons for the sampling. See Details.}
 
 \item{comment}{Name of the column specifying comments. Any non-numeric values in \code{from} and \code{to} will be transferred to this column. See Details.}
+
+\item{guess_colnames}{Logical indicating whether \code{\link{guess_colname}} function should be used to search for required column names. Defaults to \code{TRUE}. See Details.}
 }
 \value{
 Returns a list of class \code{MetaData} that contains modified meta-data records (\code{$meta}), removed meta-data records (\code{$deleted}), file name to be used when saved for database import (\code{file_id}) and a data frame containing row numbers of duplicates in the original Excel sheet (\code{$duplicates}).
@@ -61,7 +58,7 @@ Returns a list of class \code{MetaData} that contains modified meta-data records
 Exports meta-data from Excel files to the format accepted by NPI data managers
 }
 \details{
-The \strong{\code{\link{guess_colname}}} function is used to search for column names in \code{meta_file} by default. This procedure saves the user from specifying all the required column names (\code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{responsible} and \code{comment}). The function works well with tested Excel sheets, but might cause an error if column names are far from tested names.
+The \strong{\code{\link{guess_colname}}} function is used to search for column names in \code{meta_file} by default. This procedure saves the user from specifying all the required column names (\code{expedition}, \code{station}, \code{type}, \code{sample_name}, \code{longitude}, \code{latitude}, \code{date}, \code{bottom_depth}, \code{gear}, \code{from}, \code{to}, \code{responsible} and \code{comment}). The function works well with tested Excel sheets, but might cause an error if column names are far from tested names. Modify \code{\link{coln_search_words}} in such case (guessing is done using regular expressions).
 
 The easiest solution is to change the column names close to column names listed in Usage (or close to those listed in \code{\link{coln_search_words}}). Alternatively you can list all column names manually. Note that any white space in column names must be denoted by period (\code{.}). All column names should be specified as character strings of length 1. The column names refer to the meta-data table (\code{dt}).
 
