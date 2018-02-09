@@ -41,7 +41,8 @@ make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.
     tp <- k[!is.na(k[[ab.col]]),]
     tp <- tp[tp[[ab.col]] > 0,]
   
-    out <- data.frame(or_name = as.character(unique(k[[sp.col]])), expedition = paste(unique(k[[exp.col]]), collapse = "; "), ab = sum(k[[ab.col]], na.rm = TRUE), n = length(as.character(unique(tp[[st.col]]))))
+    out <- data.frame(or_name = as.character(unique(k[[sp.col]])), expedition = paste(unique(k[[exp.col]]), collapse = "; "), 
+                      ab = sum(k[[ab.col]], na.rm = TRUE), n = length(as.character(unique(tp[[st.col]]))))
     out$perAb <- 100*out$ab/sum.info$abSum
     out$fo <- 100*out$n/sum.info$N
     out
