@@ -208,6 +208,7 @@ if(nlevels(dt) > 1) warning("There are several levels for expedition in the meta
 ## Station 
 
 if(any(duplicated(tolower(levels(dt$station))))) warning("Station names may contain typos. Check the station names from the output.")
+levels(dt$station) <- trimws(levels(dt$station))
 
 ## Sample type 
 

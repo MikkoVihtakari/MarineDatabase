@@ -54,7 +54,7 @@ x <- split(dat, dat$temp, drop = TRUE)
 
 ## Loop ####
 
-# k <- x[["AARI_SHEBA_12"]]
+# k <- x[["N-ICE15_Worlds End Lead_3"]]
 # k <- x[[2]]
 out <- lapply(x, function(k) {
 
@@ -132,7 +132,7 @@ if(!is.null(convert_unit) & ((convert_unit$from != "per" & convert_unit$to != "p
 if(convert_unit$from == "per" & convert_unit$to == "per") {
   
   if(summarise_cores) {
-    k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col, start_col, end_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var), var = as.name(ab_col)))
+    k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col, start_col, end_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(ab_col)))
     k <- data.frame(k)
     if(ab_col != "abundance") {
       names(k)[names(k) == "abundance"] <- ab_col
@@ -143,7 +143,7 @@ if(convert_unit$from == "per" & convert_unit$to == "per") {
     if(nrow(k) > 1) k <- k[!k[[sp_col]] %in% "Empty",]
     
   } else {
-    k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var), var = as.name(ab_col)))
+    k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(ab_col)))
     k <- data.frame(k)
     if(ab_col != "abundance") {
       names(k)[names(k) == "abundance"] <- ab_col
@@ -156,9 +156,9 @@ if(round(sum(k[[ab_col]]), 0) != 100) stop("Abundace sum for ", id, " is not 100
 } else if(convert_unit$from == "rel") {
   
   if(summarise_cores) {
-     k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col, start_col, end_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var), var = as.name(ab_col)), occurences = lazyeval::interp(~length(var), var = as.name(sp_col)))
+     k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col, start_col, end_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(ab_col)), occurences = lazyeval::interp(~length(var), var = as.name(sp_col)))
   } else {
-    k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var), var = as.name(ab_col)), occurences = lazyeval::interp(~length(var), var = as.name(sp_col)))
+    k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(ab_col)), occurences = lazyeval::interp(~length(var), var = as.name(sp_col)))
   }
  
   k <- data.frame(k)
@@ -190,7 +190,7 @@ if(round(sum(k[[ab_col]]), 0) != 100) stop("Abundace sum for ", id, " is not 100
   
 } else {
    if(summarise_cores) {
-    k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col, start_col, end_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var), var = as.name(ab_col)))
+    k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col, start_col, end_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(ab_col)))
     k <- data.frame(k)
     if(ab_col != "abundance") {
       names(k)[names(k) == "abundance"] <- ab_col
@@ -202,7 +202,7 @@ if(round(sum(k[[ab_col]]), 0) != 100) stop("Abundace sum for ", id, " is not 100
     k$core_type <- bottom.code
 
   } else {
-    k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var), var = as.name(ab_col)))
+    k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(ab_col)))
     k <- data.frame(k)
     
     ## Remove empty entries
@@ -257,6 +257,10 @@ sum_info <- function(ID = id, dt_st = k_og, dt_ed = k, sum_cor = summarise_cores
 
 ### Define core type ####
 bottom_sec <- function(start, end, icethick, cont_sec) {
+  ifelse(all(start == 0, is.na(icethick)),
+    paste("bottom", end, "cm"),
+  ifelse(all(start != 0, is.na(icethick)),
+    "bottom sec missing",
   ifelse(all(start == 0, end == icethick, cont_sec), 
     "whole core",
   ifelse(all(start == 0, end == icethick, !cont_sec),
@@ -268,7 +272,7 @@ bottom_sec <- function(start, end, icethick, cont_sec) {
   ifelse(start != 0,
     "bottom sec missing",
     "ERROR"
-  )))))
+  )))))))
 }
 
 ### Scrap functions
