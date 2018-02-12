@@ -10,19 +10,28 @@
 #' @param end_col Character argument specifying the name of the column in \code{dat} for the section end for the ice core in centimeters or meters.
 #' @param ice_thick_col Character argument specifying the name of the column in \code{dat} for ice thickness preferably in \strong{centimeters}
 #' @param add_cols A character vector containing names of the additional columns that should be included in the output. These columns are not used by the function otherwise. Additional columns cannot contain several unique values due to summarizing process.
-#' @param convert_unit List or \code{NULL}. See details.
-#' @param summarize_cores Logical. Should core sections be summarized to a continuous core? If \code{TRUE} (default), all sections are summarized, \code{start_col} and \code{end_col} removed from the output, and a \code{$core_type} column added. If \code{FALSE} core sections are returned as they are.
+#' @param convert_unit List or \code{NULL}. Should the function convert supplied abundances using the \code{\link{convert_abundace}} function, a list giving \code{from} and \code{to} units have to be supplied. If conversion should not be made, use \code{NULL} (default). See details for alternatives.
+#' @param summarise_cores Logical. Should core sections be summarized to a continuous core? If \code{TRUE} (default), all sections are summarized, \code{start_col} and \code{end_col} removed from the output, and a \code{$core_type} column added. If \code{FALSE} core sections are returned as they are, but duplicate species names are summed up.
 #' @param return_summary Logical. Should summary statistics be returned?
 #' @details Built for ice-algae taxonomy data, but could be modified to work with any taxonomy data including plankton nets. The function is currently broken for wider use.
 #' 
-#' \strong{convert_unit} argument:  Should the function convert supplied abundances using the \code{\link{convert_abundace}} function, a list giving \code{from} and \code{to} units have to be supplied. If conversion should not be made, use \code{NULL} (default). In this cases abundances are summed up for duplicate species. If the values are percentages, use \code{list(from = "per", to = "per")}. If the values are relative values (have to have a scale from 1, least abundant, to 5, most abundant), use \code{list(from = "rel", to = "rel")}
+#' Implemented \strong{convert_unit} argument alternatives:
+#' \itemize{
+#'   \item \strong{\code{NULL}}: no conversion. Adundances summed up as they are (see \code{summarise_cores} argument).
+#'   \item \strong{\code{list(from = "per", to = "per")}}: percentage abundances are summed up according to the \code{summarise_cores} argument and scaled to 100 \% (sum for an ice core or a section adds up to 100 \%).
+#'   \item \strong{\code{list(from = "rel", to = "rel")}}: relative abundances are summed up by taking a mean for duplicate species or entire ice cores (if \code{summarise_cores = TRUE}).
+#'   \item \strong{\code{list(from = "rel", to = "per")}}: relative abundances are first summed up and a percentage of their contribution is calculated. Abundances add up to 100 \% for an ice core or a section depending on the \code{summarise_cores} argument.
+#'   \item \strong{\code{list(from = "1/L", to = "1/m2")}} (or any other variations passed to \code{\link{convert_abundace}}): Individuals per litre values converted to individuals per square metre before summing up abundances (see \code{summarise_cores} argument)
+#'   }
+#' 
 #' @return Returns a data frame with columns specified in arguments. Drops any unspecified column.
 #' @importFrom plyr mapvalues
 #' @importFrom lazyeval interp
 #' @import dplyr
 #' @author Mikko Vihtakari
+#' @encoding UTF-8
 #' @export
-#dat <- y[[2]]
+#dat <- y[[3]]
 
 # sp_col = "species"; core_cols = c("expedition", "station", "core.id"); unit_col = "unit"; convert_unit = list(from = "rel", to = "rel"); start_col = "from"; end_col = "to"; ice_thick_col = "ice"; ab_col = "abundance"; summarise_cores = TRUE; add_cols = c("gear", "longitude", "latitude", "date", "bottom_depth", "ice.type", "snow"); return_summary = TRUE
 
@@ -153,7 +162,7 @@ if(round(sum(k[[ab_col]]), 0) != 100) stop("Abundace sum for ", id, " is not 100
   }
  
   k <- data.frame(k)
-  if(nrow(k) > 1 & !summarise_cores) k <- k[!k[[sp_col]] %in% "Empty",]
+  if(nrow(k) > 1 & summarise_cores) k <- k[!k[[sp_col]] %in% "Empty",]
   
   if(convert_unit$to == "rel") {
   temp_ab <- ifelse(k$occurences <= 1, k$abundance, ifelse(k$abundance == 0, 0, round(k$abundance/k$occurences, 0)))  
@@ -175,6 +184,7 @@ if(round(sum(k[[ab_col]]), 0) != 100) stop("Abundace sum for ", id, " is not 100
   k <- k[!names(k) %in% "occurences"]
   
   if(summarise_cores) {
+     if(nrow(k) > 1) k <- k[!k[[sp_col]] %in% "Empty",]
      k$core_type <- bottom.code
   }
   
@@ -185,10 +195,19 @@ if(round(sum(k[[ab_col]]), 0) != 100) stop("Abundace sum for ", id, " is not 100
     if(ab_col != "abundance") {
       names(k)[names(k) == "abundance"] <- ab_col
     }
+    
+    ## Remove empty entries
+    if(nrow(k) > 1) k <- k[!k[[sp_col]] %in% "Empty",]
+    
     k$core_type <- bottom.code
+
   } else {
     k <- k %>% dplyr::group_by_(.dots = names(k)[!names(k) %in% c(ab_col)]) %>% dplyr::summarise_(abundance = lazyeval::interp(~sum(var), var = as.name(ab_col)))
     k <- data.frame(k)
+    
+    ## Remove empty entries
+    #(not implemented)
+    
     if(ab_col != "abundance") {
       names(k)[names(k) == "abundance"] <- ab_col
     }
@@ -229,7 +248,7 @@ sum_info <- function(ID = id, dt_st = k_og, dt_ed = k, sum_cor = summarise_cores
   paste0(ID, ": summarized from ", length(dt_st$species), " species to ", length(dt_ed$species), 
   ". ", length(unique(dt_st$species)), " unique species at the beginning and ", length(unique(dt_st$species)), " at the end. ",
   if(sum_cor) {
-  paste0("Cores summed. Core type: ", unique(k$core_type), ".")
+  paste0("Cores summed. Core type: ", unique(dt_ed$core_type), ".")
   } else {
   paste("Cores kept separate. Sections:", paste(secs$from, secs$to, sep = "-", collapse = ", "))     
     } 
