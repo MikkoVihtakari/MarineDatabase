@@ -10,7 +10,7 @@ compile_species_data(dat, splist, core_cols = c("expedition", "station",
   start_col = "from", end_col = "to", ice_thick_col = "ice",
   add_cols = c("gear", "longitude", "latitude", "date", "bottom_depth",
   "ice.type", "snow"), convert_unit = list(from = "1/L", to = "1/m2"),
-  summarise_cores = TRUE, return_summary = TRUE)
+  summarise_cores = TRUE, return_summary = TRUE, round_digits = 0)
 }
 \arguments{
 \item{dat}{data frame containing ice core species data to be combined. Must be in long format.}
@@ -38,6 +38,8 @@ compile_species_data(dat, splist, core_cols = c("expedition", "station",
 \item{summarise_cores}{Logical. Should core sections be summarized to a continuous core? If \code{TRUE} (default), all sections are summarized, \code{start_col} and \code{end_col} removed from the output, and a \code{$core_type} column added. If \code{FALSE} core sections are returned as they are, but duplicate species names are summed up.}
 
 \item{return_summary}{Logical. Should summary statistics be returned?}
+
+\item{round_digits}{Number of digits \code{start_col}, \code{end_col} and \code{ice_thick_col} values should be rounded to. Set to \code{NULL} to avoid rounding. See \code{\link[base]{round}} for details.}
 }
 \value{
 Returns a data frame with columns specified in arguments. Drops any unspecified column.
