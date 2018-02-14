@@ -122,6 +122,14 @@ z <- lapply(z, function(j) {
 
 k <- do.call(rbind, z)
 
+## Remove high abundances of symbionts (M. rubrum)
+
+symbs <- splist[splist$type %in% "symbiont" & splist$use_name %in% "Mesodinium rubrum", "or_name"]
+
+if(any(levels(k[[sp_col]]) %in% symbs)) {
+  k[k[[sp_col]] %in% symbs, ab_col] <- 1
+}
+
 ## Rename species
 k_og <- k
 k[[sp_col]] <- factor(plyr::mapvalues(as.character(k[[sp_col]]), splist$or_name, splist$use_name, warn_missing = FALSE))
@@ -132,14 +140,6 @@ k <- droplevels(k)
 
 if(!is.null(convert_unit) & ((convert_unit$from != "per" & convert_unit$to != "per") & (convert_unit$from != "rel" & convert_unit$to != "rel"))) {
   k <- suppressMessages(convert_abundance(data = k, ab_col = ab_col, ab_from = convert_unit$from, ab_to = convert_unit$to, filtered = TRUE))
-}
-
-## Remove high abundances of symbionts (M. rubrum)
-
-symbs <- splist[splist$type %in% "symbiont" & splist$use_name %in% "Mesodinium rubrum", "or_name"]
-
-if(any(levels(k[[sp_col]]) %in% symbs)) {
-  k[k[[sp_col]] %in% symbs, ab_col] <- 1
 }
 
 ######### MEGA MIND-FUCK #################
