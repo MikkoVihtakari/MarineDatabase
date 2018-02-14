@@ -13,6 +13,7 @@
 #' @param convert_unit List or \code{NULL}. Should the function convert supplied abundances using the \code{\link{convert_abundace}} function, a list giving \code{from} and \code{to} units have to be supplied. If conversion should not be made, use \code{NULL} (default). See details for alternatives.
 #' @param summarise_cores Logical. Should core sections be summarized to a continuous core? If \code{TRUE} (default), all sections are summarized, \code{start_col} and \code{end_col} removed from the output, and a \code{$core_type} column added. If \code{FALSE} core sections are returned as they are, but duplicate species names are summed up.
 #' @param return_summary Logical. Should summary statistics be returned?
+#' @param round_digits Number of digits \code{start_col}, \code{end_col} and \code{ice_thick_col} values should be rounded to. Set to \code{NULL} to avoid rounding. See \code{\link[base]{round}} for details.
 #' @details Built for ice-algae taxonomy data, but could be modified to work with any taxonomy data including plankton nets. The function is currently broken for wider use.
 #' 
 #' Implemented \strong{convert_unit} argument alternatives:
@@ -31,11 +32,11 @@
 #' @author Mikko Vihtakari
 #' @encoding UTF-8
 #' @export
-#dat <- y[[3]]
+# dat <- y[[2]]
 
-# sp_col = "species"; core_cols = c("expedition", "station", "core.id"); unit_col = "unit"; convert_unit = list(from = "rel", to = "rel"); start_col = "from"; end_col = "to"; ice_thick_col = "ice"; ab_col = "abundance"; summarise_cores = TRUE; add_cols = c("gear", "longitude", "latitude", "date", "bottom_depth", "ice.type", "snow"); return_summary = TRUE
+# sp_col = "species"; core_cols = c("expedition", "station", "core.id"); unit_col = "unit"; convert_unit = list(from = "rel", to = "rel"); start_col = "from"; end_col = "to"; ice_thick_col = "ice"; ab_col = "abundance"; summarise_cores = TRUE; add_cols = c("gear", "longitude", "latitude", "date", "bottom_depth", "ice.type", "snow"); return_summary = TRUE; round_digits = 0
 
-compile_species_data <- function(dat, splist, core_cols = c("expedition", "station", "core.id"), sp_col = "species", ab_col = "abundance", unit_col = "unit", start_col = "from", end_col = "to", ice_thick_col = "ice", add_cols = c("gear", "longitude", "latitude", "date", "bottom_depth", "ice.type", "snow"),  convert_unit = list(from = "1/L", to = "1/m2"), summarise_cores = TRUE, return_summary = TRUE) {
+compile_species_data <- function(dat, splist, core_cols = c("expedition", "station", "core.id"), sp_col = "species", ab_col = "abundance", unit_col = "unit", start_col = "from", end_col = "to", ice_thick_col = "ice", add_cols = c("gear", "longitude", "latitude", "date", "bottom_depth", "ice.type", "snow"),  convert_unit = list(from = "1/L", to = "1/m2"), summarise_cores = TRUE, return_summary = TRUE, round_digits = 0) {
 
 ### Tests ####
 
@@ -54,7 +55,7 @@ x <- split(dat, dat$temp, drop = TRUE)
 
 ## Loop ####
 
-# k <- x[["N-ICE15_Worlds End Lead_3"]]
+# k <- x[["N-ICE15_Main Coring Site_8"]]
 # k <- x[[2]]
 out <- lapply(x, function(k) {
 
@@ -73,14 +74,29 @@ k <- droplevels(k)
 ## Definitions for ice cores
 
 ### Test whether the ice core contains missing pieces
+
+if(!is.null(round_digits)) {
+if(!is.numeric(round_digits)) stop("round argument must be an integer")
+  k[[start_col]] <- base::round(k[[start_col]], round_digits)
+  k[[end_col]] <- base::round(k[[end_col]], round_digits)
+  k[[ice_thick_col]] <- base::round(k[[ice_thick_col]], round_digits)
+  
+  start <- min(k[start_col])
+  end <- max(k[end_col])
+  icethick <- unique(k[[ice_thick_col]])
+  
+} else {
+  start <- min(k[start_col])
+  end <- max(k[end_col])
+  icethick <- unique(k[[ice_thick_col]])
+}
+
+
 sections <- unique(k[c(start_col, end_col)])
 cont_sec <- interleave(sections[[1]], sections[[2]])
 cont_sec <- all(duplicated(cont_sec[c(-1, -length(cont_sec))]) == rep(c(FALSE, TRUE), (length(cont_sec)-2)/2))
 
 ### Parameters
-start <- min(k[start_col])
-end <- max(k[end_col])
-icethick <- unique(k[[ice_thick_col]])
 
 
 if(summarise_cores) {
@@ -106,14 +122,6 @@ z <- lapply(z, function(j) {
 
 k <- do.call(rbind, z)
 
-## Remove high abundances of symbionts (M. rubrum)
-
-symbs <- splist[splist$type %in% "symbiont" & splist$use_name %in% "Mesodinium rubrum", "or_name"]
-
-if(any(levels(k[[sp_col]] %in% symbs))) {
-  k[k[[sp_col]] %in% symbs, ab_col] <- 1
-}
-
 ## Rename species
 k_og <- k
 k[[sp_col]] <- factor(plyr::mapvalues(as.character(k[[sp_col]]), splist$or_name, splist$use_name, warn_missing = FALSE))
@@ -124,6 +132,14 @@ k <- droplevels(k)
 
 if(!is.null(convert_unit) & ((convert_unit$from != "per" & convert_unit$to != "per") & (convert_unit$from != "rel" & convert_unit$to != "rel"))) {
   k <- suppressMessages(convert_abundance(data = k, ab_col = ab_col, ab_from = convert_unit$from, ab_to = convert_unit$to, filtered = TRUE))
+}
+
+## Remove high abundances of symbionts (M. rubrum)
+
+symbs <- splist[splist$type %in% "symbiont" & splist$use_name %in% "Mesodinium rubrum", "or_name"]
+
+if(any(levels(k[[sp_col]]) %in% symbs)) {
+  k[k[[sp_col]] %in% symbs, ab_col] <- 1
 }
 
 ######### MEGA MIND-FUCK #################
@@ -261,6 +277,8 @@ bottom_sec <- function(start, end, icethick, cont_sec) {
     paste("bottom", end, "cm"),
   ifelse(all(start != 0, is.na(icethick)),
     "bottom sec missing",
+  ifelse(end > icethick,
+    "wrong ice thinkness",
   ifelse(all(start == 0, end == icethick, cont_sec), 
     "whole core",
   ifelse(all(start == 0, end == icethick, !cont_sec),
@@ -272,7 +290,7 @@ bottom_sec <- function(start, end, icethick, cont_sec) {
   ifelse(start != 0,
     "bottom sec missing",
     "ERROR"
-  )))))))
+  ))))))))
 }
 
 ### Scrap functions
