@@ -122,9 +122,9 @@ z <- lapply(z, function(j) {
 
 k <- do.call(rbind, z)
 
-## Remove high abundances of symbionts (M. rubrum)
+## Remove high abundances of symbionts and spores (M. rubrum)
 
-symbs <- splist[splist$type %in% "symbiont" & splist$use_name %in% "Mesodinium rubrum", "or_name"]
+symbs <- splist[which((splist$type %in% "symbiont" & splist$use_name %in% "Mesodinium rubrum") | splist$type %in% "spore"), "or_name"]
 
 if(any(levels(k[[sp_col]]) %in% symbs)) {
   k[k[[sp_col]] %in% symbs, ab_col] <- 1
