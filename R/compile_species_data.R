@@ -91,7 +91,6 @@ if(!is.numeric(round_digits)) stop("round argument must be an integer")
   icethick <- unique(k[[ice_thick_col]])
 }
 
-
 sections <- unique(k[c(start_col, end_col)])
 cont_sec <- interleave(sections[[1]], sections[[2]])
 cont_sec <- all(duplicated(cont_sec[c(-1, -length(cont_sec))]) == rep(c(FALSE, TRUE), (length(cont_sec)-2)/2))
@@ -101,6 +100,7 @@ cont_sec <- all(duplicated(cont_sec[c(-1, -length(cont_sec))]) == rep(c(FALSE, T
 
 if(summarise_cores) {
 bottom.code <- bottom_sec(start, end, icethick, cont_sec)  
+k$sections <- paste(paste(sections$from, sections$to, sep = "-"), collapse = "|")
 }
 
 ## Fix instances with empty cores
@@ -234,7 +234,7 @@ if(round(sum(k[[ab_col]]), 0) != 100) stop("Abundace sum for ", id, " is not 100
 
 if(summarise_cores) {
   k <- merge(k, k_add, by = core_cols, all = TRUE, sort = FALSE)
-  k <- k[c(core_cols, add_cols, ice_thick_col, "core_type", sp_col, unit_col, ab_col)]
+  k <- k[c(core_cols, add_cols, ice_thick_col, "core_type", "sections", sp_col, unit_col, ab_col)]
   list(data = k, sumInfo = sum_info(ID = id, dt_st = k_og, dt_ed = k, sum_cor = summarise_cores, secs = sections))
 } else {
   k <- merge(k, k_add, by = core_cols, all = TRUE, sort = FALSE)
