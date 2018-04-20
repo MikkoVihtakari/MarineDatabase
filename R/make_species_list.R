@@ -21,11 +21,13 @@
 #' @seealso \code{\link{confirm_species_list}} for confirming the species names against a database.
 #' @export
 
-#dat = dat; sp.col = "species"; ab.col = "abundance"; st.col = "station"; exp.col = "expedition"
-#spls <- data.frame(search_term = "Centrophyceae", stringsAsFactors = FALSE)
+# dat = dat; sp.col = "species"; ab.col = "abundance"; st.col = "station"; exp.col = "expedition"
+# ab.col = NULL; st.col = NULL; exp.col = NULL
+# spls <- data.frame(search_term = "Centrophyceae", stringsAsFactors = FALSE)
 
-make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.col = "station", exp.col = "expedition") {
+make_species_list <- function(dat, sp.col = "species", ab.col = NULL, st.col = NULL, exp.col = NULL) {
 
+  if(!is.null(ab.col) & !is.null(st.col) & !is.null(exp.col)) {
   ## Section start ####
   if(!is.factor(dat[[st.col]])) dat[[st.col]] <- factor(dat[[st.col]])
   dat[[sp.col]] <- factor(dat[[sp.col]])
@@ -47,14 +49,25 @@ make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.
     out$fo <- 100*out$n/sum.info$N
     out
   })
-  
+    
   spls <- do.call(rbind, tmp)
-
+  
+  } else {
+  
+  spls <- data.frame(or_name = dat[[sp.col]], dummy = 1, stringsAsFactors = FALSE)  
+  spls <- spls[!is.na(spls$or_name),]
+  
+  sum.info <- data.frame(N = NA, abSum = NA)
+  
+  }
+  
   spls <- rapply(object = spls, f = as.character, classes = "factor", how = "replace")
     
   spls <- spls[order(spls$or_name),]
   row.names(spls) <- 1:nrow(spls)
-
+  
+  spls <- spls[!names(spls) %in% "dummy"]
+  
   ## Add search term and modify it ###
 
   spls$search_term <- spls$or_name
@@ -165,7 +178,6 @@ make_species_list <- function(dat, sp.col = "species", ab.col = "abundance", st.
   
   # remove extra white space once more
   spls$search_term <- trimws(spls$search_term) 
-  
   
   ## Species list column classes
   

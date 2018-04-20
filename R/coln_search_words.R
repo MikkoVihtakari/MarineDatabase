@@ -9,7 +9,7 @@
 coln_search_words <- function(column, return_name = FALSE) {
   
   candidates <- list(
-    expedition = "expedition",
+    expedition = "(expedition)|(program)",
     sample_name = "name",
     station = "station",
     latitude = "(latitude)|(latitude\\sdecimal)",
@@ -22,7 +22,9 @@ coln_search_words <- function(column, return_name = FALSE) {
     #filtered_volume = "(filtered|filtration).volume",
     type = "type",
     responsible = "(person)|(responsible)|(contact)",
-    comment = "comment")
+    comment = "comment",
+    vessel = "(vessel)|(ship)",
+    unit = "unit") 
   
   
   if(!column %in% names(candidates)) {

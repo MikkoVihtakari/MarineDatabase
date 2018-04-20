@@ -4,7 +4,7 @@
 \name{TYPES}
 \alias{TYPES}
 \title{Data types}
-\format{a data.frame with column \code{gear}.}
+\format{A data.frame}
 \usage{
 data("sample_types")
 }

@@ -4,8 +4,8 @@
 \alias{make_species_list}
 \title{Generate a species list containing unique levels from a taxonomy dataset}
 \usage{
-make_species_list(dat, sp.col = "species", ab.col = "abundance",
-  st.col = "station", exp.col = "expedition")
+make_species_list(dat, sp.col = "species", ab.col = NULL, st.col = NULL,
+  exp.col = NULL)
 }
 \arguments{
 \item{dat}{Data frame containing taxonomy information. Must be in long format.}
