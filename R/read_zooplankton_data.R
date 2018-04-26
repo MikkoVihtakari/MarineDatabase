@@ -8,7 +8,9 @@
 #' @param control_stations Logical indicating whether station names should be controlled against a list of standardized station names (see \code{\link{STATIONS}}).
 #' @param output_format Output formar for date. See \code{\link{convert_dates}}.
 #' @param add_coordinates If \code{TRUE} coordinates will be added to metadata from the list of standardized station names.
-#' @param species_info_cols Character vector specifying the species information columns that should be preserved.
+#' @param control_species Either \code{NULL} or a named list giving the name of species, stage and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{ZOOPL}).
+#' @param species_info_cols Character vector specifying the names of species information columns that should be preserved. If \code{control_species = TRUE}, the infomation will be used to match species entries agains the zooplankton lookup list (see \code{ZOOPL}).
+#' @param lookup_cols Character vector specifying the names of columns from the zooplankton lookup list (\code{ZOOPL}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}. 
 #' @param remove_missing Logical indicating whether species with column sums of 0 should be removed from the output.
 #' @return Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).
 #' @import openxlsx
@@ -17,9 +19,9 @@
 #' @export
 
 # Test parameters
-# data_file = "Data/Kongsfjorden_zooplankton_allyears.xlsx"; sheet = "ALL ind m3"; dataStart = 11; dataEnd = 266; control_stations = TRUE; output_format = "as.Date"; add_coordinates = TRUE; dataCols = NULL; species_info_cols = c("group", "species", "stage", "size_op", "length")
+# data_file = "Data/Kongsfjorden_zooplankton_allyears.xlsx"; sheet = "ALL ind m3"; dataStart = 11; dataEnd = 266; control_stations = TRUE; output_format = "as.Date"; add_coordinates = TRUE; dataCols = NULL; control_species = list(species = "species", stage = "stage", length = "length"); species_info_cols = c("group", "species", "stage", "length"); lookup_cols = NULL; remove_missing = TRUE
 
-read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 266, dataCols = NULL, control_stations = TRUE, output_format = "as.Date", add_coordinates = FALSE, species_info_cols = c("group", "species", "stage", "size_op", "length"), remove_missing = TRUE) {
+read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 266, dataCols = NULL, control_stations = TRUE, output_format = "as.Date", add_coordinates = FALSE, control_species = list(species = "species", stage = "stage", length = "length"), species_info_cols = c("species", "stage", "length"), lookup_cols = NULL, remove_missing = TRUE) {
 
 ## Open the file
   
@@ -66,7 +68,6 @@ tmp[names(tmp)] <- lapply(names(tmp), function(k) {
   }
 })
 
-
 ### Dates
 
 tmp <- convert_dates(dt = tmp, excel_file = data_file, file_ext = file_ext, output_format = output_format)
@@ -75,7 +76,7 @@ tmp <- convert_dates(dt = tmp, excel_file = data_file, file_ext = file_ext, outp
 
 tmp$station <- factor(tmp$station)
 
-## Logical indicating whether station names should be controlled against allowed station names given in the \code{\link{STATIONS}} data frame
+## Control stations
 
 if(control_stations) {
   
@@ -144,6 +145,28 @@ row.names(meta) <- 1:nrow(meta)
 
 sp <- dt[species_info_cols]
 
+if(is.list(control_species)) {
+  
+  sp$species <- gsub("\\(cf.\\)", "", sp$species)
+  sp$species <- gsub(" Total", "", sp$species)
+  sp$species <- gsub(" indet.", "", sp$species)
+  sp$species <- trimws(sp$species)
+  sp$idno <- 1:nrow(sp)
+  
+  sp <- merge(sp, ZOOPL[c("species", "stage", "length", "species_ID", lookup_cols)], by.x = unname(unlist(control_species)), by.y = c("species", "stage", "length"), all.x = TRUE, sort = FALSE)
+
+  sp <- sp[order(sp$idno),]
+  sp <- sp[!names(sp) %in% "idno"]
+  
+  if(any(is.na(sp$species_ID))) {
+    tmp <- sp[is.na(sp$species_ID), "species"]
+    sp$species_ID[is.na(sp$species_ID)] <- ifelse(nchar(tmp) > 8, abbreviate(tmp, minlength = 6), tmp)
+  }
+    
+  names(sp)[names(sp) %in% "species_ID"]  <- "id"
+
+} else {
+
 ### Short species names
 
 tmp <- gsub("Calanus finmarchicus", "Cfin", trimws(sp$species))
@@ -192,6 +215,8 @@ short_names <- ifelse(!is.na(tmp2), paste0(tmp, tmp2), ifelse(!is.na(sp$length),
 
 sp$id <- make.names(short_names, unique = TRUE)
 
+}
+
 ## Abundance data ####
 
 if(is.null(dataCols)) {
@@ -220,6 +245,7 @@ rownames(dat) <- meta$id
 if(remove_missing) {
   missing_sps <- names(dat)[colSums(dat, na.rm = TRUE) == 0]
   dat <- dat[!names(dat) %in% missing_sps]
+  dat[is.na(dat)] <- 0
   
   sp <- sp[!sp$id %in% missing_sps,]
 }
@@ -229,6 +255,7 @@ out <- list(data = dat, meta = meta, splist = sp)
 class(out) <- "ZooplanktonData"
 
 return(out)
+
 }
 #write.xlsx(dat, file = "control_del.xlsx", row.names = TRUE)
 

@@ -6,8 +6,9 @@
 \usage{
 read_zooplankton_data(data_file, sheet = 1, dataStart = 11, dataEnd = 266,
   dataCols = NULL, control_stations = TRUE, output_format = "as.Date",
-  add_coordinates = FALSE, species_info_cols = c("group", "species",
-  "stage", "size_op", "length"), remove_missing = TRUE)
+  add_coordinates = FALSE, control_species = list(species = "species", stage
+  = "stage", length = "length"), species_info_cols = c("species", "stage",
+  "length"), lookup_cols = NULL, remove_missing = TRUE)
 }
 \arguments{
 \item{data_file}{Path to the Excel file containing zooplankton data}
@@ -26,7 +27,11 @@ read_zooplankton_data(data_file, sheet = 1, dataStart = 11, dataEnd = 266,
 
 \item{add_coordinates}{If \code{TRUE} coordinates will be added to metadata from the list of standardized station names.}
 
-\item{species_info_cols}{Character vector specifying the species information columns that should be preserved.}
+\item{control_species}{Either \code{NULL} or a named list giving the name of species, stage and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{ZOOPL}).}
+
+\item{species_info_cols}{Character vector specifying the names of species information columns that should be preserved. If \code{control_species = TRUE}, the infomation will be used to match species entries agains the zooplankton lookup list (see \code{ZOOPL}).}
+
+\item{lookup_cols}{Character vector specifying the names of columns from the zooplankton lookup list (\code{ZOOPL}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}.}
 
 \item{remove_missing}{Logical indicating whether species with column sums of 0 should be removed from the output.}
 }
