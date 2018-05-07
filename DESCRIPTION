@@ -1,10 +1,10 @@
 Package: MarineDatabase
 Type: Package
 Title: Export data to Norwegian Polar Institute's marine database
-Version: 0.2.17
+Version: 0.2.19
 Author: Norwegian Polar Institute
 Maintainer: Mikko Vihtakari <mikko.vihtakari@gmail.com>
-Description: An attempt to compile functions that make data validation and imporing easier to the NPI's Marine Database.
+Description: An attempt to compile functions that make data validation and imporing easier to the NPI's Marine Database. Contains also functions to help marine biological reseach.
 License: MIT
 Encoding: UTF-8
 LazyData: true

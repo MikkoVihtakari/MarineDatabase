@@ -20,10 +20,12 @@
 
 # Test parameters
 # data_file = "Data/Kongsfjorden_zooplankton_allyears.xlsx"; sheet = "ALL ind m3"; dataStart = 11; dataEnd = 266; control_stations = TRUE; output_format = "as.Date"; add_coordinates = TRUE; dataCols = NULL; control_species = list(species = "species", stage = "stage", length = "length"); species_info_cols = c("group", "species", "stage", "length"); lookup_cols = NULL; remove_missing = TRUE
+# data_file = "Data/Kongsfjord_zooplankton_2005.xlsx"; sheet = "Arkusz1"; dataStart = 11; dataEnd = 266; control_stations = TRUE; output_format = "as.Date"; species_info_cols = c("species", "stage", "length"); lookup_cols = c("size_group", "origin", "biomass_conv"); add_coordinates = TRUE; control_species = list(species = "species", stage = "stage", length = "length"); dataCols = NULL
+
 
 read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 266, dataCols = NULL, control_stations = TRUE, output_format = "as.Date", add_coordinates = FALSE, control_species = list(species = "species", stage = "stage", length = "length"), species_info_cols = c("species", "stage", "length"), lookup_cols = NULL, remove_missing = TRUE) {
 
-## Open the file
+## Open the file ####
   
 if(is.data.frame(data_file)) {
   stop("Other read methods than Excel have not been implemented yet")
@@ -223,7 +225,7 @@ if(is.null(dataCols)) {
 
   tmp <- names(dt)[grepl("X", names(dt)) & sapply(dt, class) == "numeric"]
   tmp <- as.numeric(gsub("\\D", "", tmp))
-  firstCol <- paste0("X", min(tmp[tmp > 6]))
+  firstCol <- paste0("X", min(tmp[tmp > 4]))
   dat <- dt[which(names(dt) == firstCol):ncol(dt)]
 
   } else {
@@ -233,6 +235,10 @@ dat <- dt[dataCols]
 dat <- t(dat)
 
 dat <- as.data.frame(dat, stringsAsFactors = FALSE)
+
+if(nrow(meta) != nrow(dat)) stop("Number of meta-data rows does not match with number of data rows. The error may be caused by the function not being able to define data columns correctly. Try using a numeric index in dataCols argument")
+
+if(nrow(sp) != ncol(dat)) stop("Number of species list rows and data does not match. No idea why this happens. Try debugging the function section by section.")
 
 colnames(dat) <- sp$id
 rownames(dat) <- meta$id

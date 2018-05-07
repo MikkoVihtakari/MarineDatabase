@@ -53,10 +53,15 @@ if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
         out <- out + add_time*3600
       } 
       
-        if(is.na(out)) { #last save
-        out <- as.POSIXct(as.numeric(k) * (60*60*24), tz = "UTC", origin = date_origin)
+      if(is.na(out) & grepl("\\.", k)) {
+        out <- strptime(k, format = "%d.%m.%Y", tz = "UTC")
         out <- out + add_time*3600
-        }
+      }
+      
+      if(is.na(out)) { #last save
+      out <- as.POSIXct(as.numeric(k) * (60*60*24), tz = "UTC", origin = date_origin)
+      out <- out + add_time*3600
+      }
           
        strftime(as.POSIXct(out, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
       

@@ -33,6 +33,8 @@ watertype <- sapply(1:nrow(dt), function(i) {
   out
 })
 
+watertype <- factor(watertype, levels = c("AW", "TAW", "IW", "ArW", "WCW", "SW", "Other"))
+
  if(bind) {
     cbind(dt, watertype)
     } else {
