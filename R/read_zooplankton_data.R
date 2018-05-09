@@ -8,12 +8,15 @@
 #' @param control_stations Logical indicating whether station names should be controlled against a list of standardized station names (see \code{\link{STATIONS}}).
 #' @param output_format Output formar for date. See \code{\link{convert_dates}}.
 #' @param add_coordinates If \code{TRUE} coordinates will be added to metadata from the list of standardized station names.
-#' @param control_species Either \code{NULL} or a named list giving the name of species, stage and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{ZOOPL}).
+#' @param control_species Either \code{NULL} or a named list giving the name of species, stage and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{ZOOPL}). Recommended. Seetting this to \code{NULL} may lead to unexpected behaviour.
 #' @param species_info_cols Character vector specifying the names of species information columns that should be preserved. If \code{control_species = TRUE}, the infomation will be used to match species entries agains the zooplankton lookup list (see \code{ZOOPL}).
 #' @param lookup_cols Character vector specifying the names of columns from the zooplankton lookup list (\code{ZOOPL}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}. 
 #' @param remove_missing Logical indicating whether species with column sums of 0 should be removed from the output.
 #' @return Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).
-#' @import openxlsx
+#' @details The function sums up duplicate species entries for each sample. 
+#' 
+#' The function is currently relatively unstable and most likely requires manual debugging for each dataset. 
+#' @import openxlsx reshape2
 #' @importFrom plyr mapvalues
 #' @author Mikko Vihtakari
 #' @export
@@ -24,6 +27,10 @@
 
 
 read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 1000, dataCols = NULL, control_stations = TRUE, output_format = "as.Date", add_coordinates = FALSE, control_species = list(species = "species", stage = "stage", length = "length"), species_info_cols = c("species", "stage", "length"), lookup_cols = NULL, remove_missing = TRUE) {
+
+## Switches
+
+duplicate_sp <- FALSE
 
 ## Open the file ####
   
@@ -222,6 +229,12 @@ sp$id <- make.names(short_names, unique = TRUE)
 ## Remove Excel's extra whitespace...
 sp <- rapply(sp, function(x) trimws(x), classes = "character", how = "replace")
 
+if(any(duplicated(sp$id))) {
+  duplicate_sp <- TRUE
+  dup_sps <- sp[duplicated(sp$id),"id"]
+}
+
+
 ## Abundance data ####
 
 if(is.null(dataCols)) {
@@ -245,19 +258,46 @@ if(nrow(sp) != ncol(dat)) stop("Number of species list rows and data does not ma
 
 colnames(dat) <- sp$id
 rownames(dat) <- meta$id
+dat[is.na(dat)] <- 0
 
-############################
-#### Compile and export ####
+################################
+## Sum up duplicate species ####
 
-### Remove missing species
+if(duplicate_sp) {
+ 
+  newdat <- dat
+  newdat$id <- rownames(dat)
+  
+  newdat <- reshape2::melt(newdat, id = "id")
+  newdat <- dcast(newdat, id ~ variable, sum)
+  rownames(newdat) <- newdat$id
+  newdat <- newdat[!names(newdat) %in% "id"]
+  
+  message(paste(ncol(dat) - ncol(newdat), "species entries summed up.", nrow(dat) - nrow(newdat), "rows lost."))
+  
+  dat <- newdat
+  
+  ## Remove the duplicates from the species list
+  sp <- sp[!duplicated(sp$id),]
+}
+
+
+###############################
+### Remove missing species ####
 
 if(remove_missing) {
   missing_sps <- names(dat)[colSums(dat, na.rm = TRUE) == 0]
   dat <- dat[!names(dat) %in% missing_sps]
-  dat[is.na(dat)] <- 0
   
   sp <- sp[!sp$id %in% missing_sps,]
+  
+  message(paste(missing_sps, collapse = ", "), " have been removed from the dataset since their colSum was 0.")
 }
+
+if(duplicate_sp) message(paste(sp$id[sp$id %in% dup_sps], collapse = ", "), " were duplicated species entries. Abundances for these entries has been summed up")
+
+############################
+#### Compile and export ####
 
 out <- list(data = dat, meta = meta, splist = sp)
 

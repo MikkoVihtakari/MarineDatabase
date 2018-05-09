@@ -28,7 +28,7 @@ read_zooplankton_data(data_file, sheet = 1, dataStart = 11,
 
 \item{add_coordinates}{If \code{TRUE} coordinates will be added to metadata from the list of standardized station names.}
 
-\item{control_species}{Either \code{NULL} or a named list giving the name of species, stage and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{ZOOPL}).}
+\item{control_species}{Either \code{NULL} or a named list giving the name of species, stage and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{ZOOPL}). Recommended. Seetting this to \code{NULL} may lead to unexpected behaviour.}
 
 \item{species_info_cols}{Character vector specifying the names of species information columns that should be preserved. If \code{control_species = TRUE}, the infomation will be used to match species entries agains the zooplankton lookup list (see \code{ZOOPL}).}
 
@@ -41,6 +41,11 @@ Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames:
 }
 \description{
 Reads NPI's standard format zooplankton data
+}
+\details{
+The function sums up duplicate species entries for each sample. 
+
+The function is currently relatively unstable and most likely requires manual debugging for each dataset.
 }
 \author{
 Mikko Vihtakari
