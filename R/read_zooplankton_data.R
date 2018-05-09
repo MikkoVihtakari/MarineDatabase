@@ -20,10 +20,10 @@
 
 # Test parameters
 # data_file = "Data/Kongsfjorden_zooplankton_allyears.xlsx"; sheet = "ALL ind m3"; dataStart = 11; dataEnd = 266; control_stations = TRUE; output_format = "as.Date"; add_coordinates = TRUE; dataCols = NULL; control_species = list(species = "species", stage = "stage", length = "length"); species_info_cols = c("group", "species", "stage", "length"); lookup_cols = NULL; remove_missing = TRUE
-# data_file = "Data/Kongsfjord_zooplankton_2005.xlsx"; sheet = "Arkusz1"; dataStart = 11; dataEnd = 266; control_stations = TRUE; output_format = "as.Date"; species_info_cols = c("species", "stage", "length"); lookup_cols = c("size_group", "origin", "biomass_conv"); add_coordinates = TRUE; control_species = list(species = "species", stage = "stage", length = "length"); dataCols = NULL
+# data_file = "Data/Kongsfjord_zooplankton_2005.xlsx"; sheet = "Arkusz1"; dataStart = 11; dataEnd = 1000; control_stations = TRUE; output_format = "as.Date"; species_info_cols = c("species", "stage", "length"); lookup_cols = c("size_group", "origin", "biomass_conv"); add_coordinates = TRUE; control_species = list(species = "species", stage = "stage", length = "length"); dataCols = NULL
 
 
-read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 266, dataCols = NULL, control_stations = TRUE, output_format = "as.Date", add_coordinates = FALSE, control_species = list(species = "species", stage = "stage", length = "length"), species_info_cols = c("species", "stage", "length"), lookup_cols = NULL, remove_missing = TRUE) {
+read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 1000, dataCols = NULL, control_stations = TRUE, output_format = "as.Date", add_coordinates = FALSE, control_species = list(species = "species", stage = "stage", length = "length"), species_info_cols = c("species", "stage", "length"), lookup_cols = NULL, remove_missing = TRUE) {
 
 ## Open the file ####
   
@@ -218,6 +218,9 @@ short_names <- ifelse(!is.na(tmp2), paste0(tmp, tmp2), ifelse(!is.na(sp$length),
 sp$id <- make.names(short_names, unique = TRUE)
 
 }
+
+## Remove Excel's extra whitespace...
+sp <- rapply(sp, function(x) trimws(x), classes = "character", how = "replace")
 
 ## Abundance data ####
 

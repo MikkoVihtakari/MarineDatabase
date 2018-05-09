@@ -4,11 +4,12 @@
 \alias{read_zooplankton_data}
 \title{Read NPI's zooplanton data from an Excel sheet}
 \usage{
-read_zooplankton_data(data_file, sheet = 1, dataStart = 11, dataEnd = 266,
-  dataCols = NULL, control_stations = TRUE, output_format = "as.Date",
-  add_coordinates = FALSE, control_species = list(species = "species", stage
-  = "stage", length = "length"), species_info_cols = c("species", "stage",
-  "length"), lookup_cols = NULL, remove_missing = TRUE)
+read_zooplankton_data(data_file, sheet = 1, dataStart = 11,
+  dataEnd = 1000, dataCols = NULL, control_stations = TRUE,
+  output_format = "as.Date", add_coordinates = FALSE,
+  control_species = list(species = "species", stage = "stage", length =
+  "length"), species_info_cols = c("species", "stage", "length"),
+  lookup_cols = NULL, remove_missing = TRUE)
 }
 \arguments{
 \item{data_file}{Path to the Excel file containing zooplankton data}
