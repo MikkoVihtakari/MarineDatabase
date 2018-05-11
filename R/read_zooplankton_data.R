@@ -235,6 +235,8 @@ if(any(duplicated(sp$id))) {
 }
 
 
+rownames(sp) <- 1:nrow(sp)
+
 ## Abundance data ####
 
 if(is.null(dataCols)) {
@@ -279,6 +281,7 @@ if(duplicate_sp) {
   
   ## Remove the duplicates from the species list
   sp <- sp[!duplicated(sp$id),]
+  rownames(sp) <- 1:nrow(sp)
 }
 
 
@@ -290,11 +293,22 @@ if(remove_missing) {
   dat <- dat[!names(dat) %in% missing_sps]
   
   sp <- sp[!sp$id %in% missing_sps,]
+  rownames(sp) <- 1:nrow(sp)
   
-  message(paste(missing_sps, collapse = ", "), " have been removed from the dataset since their colSum was 0.")
+  message(length(missing_sps), " species entries have been removed from the dataset since their colSum was 0.")
 }
 
 if(duplicate_sp) message(paste(sp$id[sp$id %in% dup_sps], collapse = ", "), " were duplicated species entries. Abundances for these entries has been summed up")
+
+#############################
+#### Check species names ####
+
+if(is.list(control_species)) {
+  gen_sp_names <- sp[!sp$id %in% ZOOPL$species_ID, "id"]
+  if(length(gen_sp_names > 0)) {
+    message(paste(gen_sp_names, collapse = ", "), " were not found from ZOOPL.")
+  }
+}
 
 ############################
 #### Compile and export ####
