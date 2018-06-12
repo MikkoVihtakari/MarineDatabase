@@ -82,7 +82,7 @@ make_species_list <- function(dat, sp.col = "species", ab.col = NULL, st.col = N
     ifelse(grepl("(epiphyte)", spls$search_term, perl = TRUE), "epiphyte", NA))) )
 
   # add sp., spp., aff. and cf. to their own column
-  spls$certainty <- ifelse(grepl("aff\\s", spls$search_term, perl = TRUE), "aff.",
+  spls$certainty <- ifelse(grepl("(aff\\s)|(aff.\\s)", spls$search_term, perl = TRUE), "aff.",
     ifelse(grepl("\\scf", spls$search_term, perl = TRUE), "cf.",
     ifelse(grepl("(\\sindet)|(\\sident)", spls$search_term, perl = TRUE), "indet.",
     ifelse(grepl("(\\binc.\\ssed.$)|(\\bincertae\\ssedis$)", spls$search_term, ignore.case = TRUE, perl = TRUE), "inc. sed.",
@@ -93,7 +93,7 @@ make_species_list <- function(dat, sp.col = "species", ab.col = NULL, st.col = N
   spls$search_term <- ifelse(spls$type %in% "pollen", NA, spls$search_term)
   
   # remove aff and cf.
-  spls$search_term <- gsub("(^aff\\s)|(\\sindet.)|(\\sident.)|(\\bindet\\b)|(\\ssp.\\scf.\\s\\w+\\S+)|(\\ssp.\\scf\\s\\w+\\S+)|(\\scf.\\s\\w.\\s)|(\\scf\\s)|(\\scf[\\.]\\s)|(\\binc.\\ssed.$)|(\\bincertae\\ssedis$)", 
+  spls$search_term <- gsub("(^aff\\s)|(^aff.\\s)|(\\sindet.)|(\\sident.)|(\\bindet\\b)|(\\ssp.\\scf.\\s\\w+\\S+)|(\\ssp.\\scf\\s\\w+\\S+)|(\\scf.\\s\\w.\\s)|(\\scf\\s)|(\\scf[\\.]\\s)|(\\binc.\\ssed.$)|(\\bincertae\\ssedis$)", 
     " ", spls$search_term, perl = TRUE) 
 
   # remove sizes

@@ -89,14 +89,7 @@ tmp$station <- factor(tmp$station)
 
 if(control_stations) {
   
-  alternatives <- lapply(STATIONS$variations, function(l) {
-    trimws(unlist(strsplit(l, ";")))
-  })
-  
-  #k <- tolower(levels(tmp$station))[4]
-  new_names <- sapply(tolower(levels(tmp$station)), function(k) {
-    STATIONS[unlist(lapply(alternatives, function(l) k %in% l)), "station"]
-  })
+ new_names <- fix_station_names(levels(tmp$station))
   
   if(any(is.na(new_names))) {
     stop("Could not find all station names. Check or use control_stations = FALSE")

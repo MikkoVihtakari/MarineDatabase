@@ -26,6 +26,8 @@
 
 ## Test parameters
 # unlog = FALSE; ci.type = "t"; ci.conf = 0.95; all.data = FALSE; signif = 2; sqrt_transform = FALSE; paired_tests = TRUE
+# ci.type = NULL; ci.conf = 0.95; paired_tests = FALSE; unlog = FALSE; all.data = FALSE; signif = 2; sqrt_transform = FALSE
+# X = y; response = "value"; groups = "Area"; levels = "Type"; control = "Glacier outflow"
 # X = x; response = "value"; levels = "ytemp"; groups = c("variable", "region"); control = "cold"
 # X = env; response = c("temp", "sal", "ice"); levels = "ytemp"; groups = c("region"); control = "cold"
 

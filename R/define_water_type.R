@@ -10,7 +10,7 @@
 #' @author Mikko Vihtakari
 #' @export
 
-# dt <- ctd; temp_col <- "temp"; sal_col <- "sal"
+# dt <- dat; temp_col <- "Temp"; sal_col <- "Sal"
 define_water_type <- function(dt, temp_col = "temp", sal_col = "sal", bind = FALSE, return_water_type_list = FALSE) {
 
 waters <- c("Atlantic Water", "Arctic Water", "Winter Cooled Water", "Local Water", "Surface Water", "Transformed Atlantic Water", "Intermediate Water")
@@ -24,11 +24,23 @@ if(return_water_type_list) {
 } else {
 
 watertype <- sapply(1:nrow(dt), function(i) {
+  # print(i)
+  
+  tmp <- dt[i, c(sal_col, temp_col)]
+  
+  if(any(c(apply(tmp, 1, is.na)))) {
+    
+    out <- NA
+  
+    } else {
+  
   index <- dt[[i, sal_col]] > WM$x.min & dt[[i, sal_col]] <= WM$x.max & dt[[i, temp_col]] > WM$y.min & dt[[i, temp_col]] <= WM$y.max
   out <- WM[index, "Abb"]
   
   if(length(out) > 1) stop("Several water types matched")
   if(length(out) == 0) out <- "Other"
+  
+  }
   
   out
 })

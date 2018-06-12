@@ -19,11 +19,12 @@
 
 convert_dates <- function(dt, excel_file = NULL, file_ext = NULL, add_time = 0, date_origin = "1899-12-30", output_format = "iso8601") {
 
+if(!is.null(excel_file)) file_ext <- MarineDatabase::select(strsplit(excel_file, "\\."), 2)
+  
 if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
   dt$temp_date <- openxlsx::convertToDateTime(dt$date, tz = "UTC")
   dt$temp_date <- dt$temp_date + add_time*3600
   dt$date <- strftime(as.POSIXct(dt$temp_date, "UTC"), "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
-  dt <- dt[!names(dt) %in% temp_date]
   #message(paste("Date converted to ISO 8601 format. Stored as", class(dt$date), "assuming", openxlsx::getDateOrigin(excel_file), "as origin date. Control that dates match with the Excel sheet. You can use add_time to adjust if there is offset."))
 } else {
   if(is.numeric(dt$date)) {
@@ -90,7 +91,7 @@ if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
 
   }}}}
   
-  dt <- dt[!names(dt) %in% "temp_date",]
+  dt <- dt[!names(dt) %in% "temp_date"]
 
   dt$date <- switch(output_format,
     iso8601 = dt$date,

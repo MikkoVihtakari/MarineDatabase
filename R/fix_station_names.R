@@ -13,7 +13,7 @@ fix_station_names <- function(x) {
   })
  
   #k <- tolower(x)[4]
-  new_names <- sapply(tolower(x), function(k) {
+  new_names <- sapply(tolower(gsub(" ", "", x)), function(k) {
     STATIONS[unlist(lapply(alternatives, function(l) k %in% l)), "station"]
   })
   
