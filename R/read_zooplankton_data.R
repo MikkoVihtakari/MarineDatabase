@@ -1,36 +1,53 @@
-#' @title Read NPI's zooplanton data from an Excel sheet
-#' @description Reads NPI's standard format zooplankton data
+#' @title Read NPI zooplanton data from an Excel sheet
+#' @description Reads IOPAN and NPI standard format zooplankton data
 #' @param data_file Path to the Excel file containing zooplankton data
 #' @param sheet The name or index of the sheet to read the zooplanton data from. See \code{\link[openxlsx]{read.xlsx}}
 #' @param dataStart The row number where zooplanton data starts from
 #' @param dataEnd The row number where zooplankton data ends
-#' @param dataCols Optional numeric index indicating the column numbers that contain zooplankton data
-#' @param control_stations Logical indicating whether station names should be controlled against a list of standardized station names (see \code{\link{STATIONS}}).
+#' @param dataCols Optional numeric index indicating the column numbers that contain zooplankton data. Not implemented yet.
+#' @param control_stations Logical indicating whether station names should be controlled against a list of standardized station names (see \code{\link{STATIONS}}). Should be \code{FALSE} for any other dataset than the standard monitoring (MOSJ) datasets.
 #' @param output_format Output formar for date. See \code{\link{convert_dates}}.
 #' @param add_coordinates If \code{TRUE} coordinates will be added to metadata from the list of standardized station names.
-#' @param control_species Either \code{NULL} or a named list giving the name of species, stage and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{ZOOPL}). Recommended. Seetting this to \code{NULL} may lead to unexpected behaviour.
-#' @param species_info_cols Character vector specifying the names of species information columns that should be preserved. If \code{control_species = TRUE}, the infomation will be used to match species entries agains the zooplankton lookup list (see \code{ZOOPL}).
-#' @param lookup_cols Character vector specifying the names of columns from the zooplankton lookup list (\code{ZOOPL}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}. 
+#' @param control_species Either \code{NULL} or a named list giving the name of species, stage, size operator and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{\link{ZOOPL}}). Recommended. Setting this to \code{NULL} may lead to unexpected behaviour. The size operator (\code{size_op}) element is used to match old type zooplankton files (most of them) and can be ignored for the new standardized files by setting \code{size_op = NULL}. 
+#' @param species_info_cols Character vector specifying the names of species information columns that should be preserved. Required only if \code{control_species = NULL}, otherwise ignored. Adds some flexibility if species names are messed up, but use of \code{control_species} list is recommended.
+#' @param lookup_cols Character vector specifying the names of columns from the zooplankton lookup list (\code{\link{ZOOPL}}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}. 
 #' @param remove_missing Logical indicating whether species with column sums of 0 should be removed from the output.
 #' @return Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).
-#' @details The function sums up duplicate species entries for each sample. 
+#' @details Zooplankton taxonomy data from IOPAN are received in (more or less) standard format on MS Excel sheets. This function attempts to read that format and enable passing data to futher manipulation in R. The structure of the Excel sheet is explained in Figure 1. 
+#' 
+#' \figure{zooplankton_data_sheet.png}{options: width=700}
+#' 
+#' Figure 1. Example how zooplankton Excel sheets tend to be arranged. 
+#'  \enumerate{
+#'     \item \strong{Meta data} are arranged row-vise (with headers on rows) and should contain following fields: "expedition", "station", "sample_name", "date", "from", "to", "unit", and "comment". The field names will be \link[=guess_colname]{guessed}. If the function does not guess the names correctly, try changing the names to the required field names. The \code{dataCols} argument may be used as help to specify the column indices containing data to help the function (currently not implemented). 
+#'     \item \strong{Data} are listed column-wise for each station. Make sure that there are \strong{no blank data columns with meta data} (entirely blank columns are OK) as the function does not manage to separate such columns yet. Specify the row number for beginning (\code{dataStart}) of the data section. Rows > \code{dataStart} will be considered as meta data. The \code{dataEnd} argument can be used in cases where the sheet contains scrap data. Rows > \code{dataEnd} will be dropped. 
+#'     \item \strong{Species list} is arranged column-wise and the field headers should be listed in the \code{control_species} argument.
+#'     \item The correct Excel sheet containing all data is often named "ALL...", but this varies (purple text).
+#' }
+#' 
+#' The function sums up duplicate species entries for each sample. The function attemps to match the species names in \code{data_file} with the accepted ones listed in \code{\link{ZOOPL}}. Sometimes this routine fails and manual fixes are required. 
 #' 
 #' The function is currently relatively unstable and most likely requires manual debugging for each dataset. 
 #' @import openxlsx reshape2
 #' @importFrom plyr mapvalues
-#' @author Mikko Vihtakari
+#' @author Mikko Vihtakari, Anette Wold
 #' @export
 
 # Test parameters
+# data_file = "../../../Rijpfjorden Carbon Bridge/Data/Zooplankton/zoopl_rjipfj_2010_2013_ind_m3.xlsx"; sheet = "ALL_to_R"; dataStart = 11; dataEnd = 1000; dataCols = NULL; control_stations = FALSE; output_format = "as.Date"; add_coordinates = FALSE; control_species = list(species = "species", stage = "stage", size_op = "size_op", length = "length"); species_info_cols = NULL; lookup_cols = NULL; remove_missing = TRUE
 # data_file = "Data/Kongsfjorden_zooplankton_allyears.xlsx"; sheet = "ALL ind m3"; dataStart = 11; dataEnd = 266; control_stations = TRUE; output_format = "as.Date"; add_coordinates = TRUE; dataCols = NULL; control_species = list(species = "species", stage = "stage", length = "length"); species_info_cols = c("group", "species", "stage", "length"); lookup_cols = NULL; remove_missing = TRUE
 # data_file = "Data/Kongsfjord_zooplankton_2005.xlsx"; sheet = "Arkusz1"; dataStart = 11; dataEnd = 1000; control_stations = TRUE; output_format = "as.Date"; species_info_cols = c("species", "stage", "length"); lookup_cols = c("size_group", "origin", "biomass_conv"); add_coordinates = TRUE; control_species = list(species = "species", stage = "stage", length = "length"); dataCols = NULL
 
 
-read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 1000, dataCols = NULL, control_stations = TRUE, output_format = "as.Date", add_coordinates = FALSE, control_species = list(species = "species", stage = "stage", length = "length"), species_info_cols = c("species", "stage", "length"), lookup_cols = NULL, remove_missing = TRUE) {
+read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 1000, dataCols = NULL, output_format = "as.Date", control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"), lookup_cols = NULL, species_info_cols = NULL, remove_missing = TRUE, control_stations = FALSE, add_coordinates = FALSE) {
 
 ## Switches
 
 duplicate_sp <- FALSE
+
+if(!is.null(dataCols)) stop("dataCols argument has not been implemented yet.")
+if(!is.null(control_species) & any(names(control_species) != c("species", "stage", "size_op", "length"))) stop("control_species has to be either NULL or a named list with elements species, stage, size_op, length. See Usage for an example, Arguments and Details for explanation")
+
 
 ## Open the file ####
   
@@ -60,7 +77,7 @@ tmp <- tmp[!grepl("NA", names(tmp))]
 
 ### Column names
 
-colns <- guess_colname(cols = c("expedition", "station", "vessel", "sample_name", "date", "from", "to", "unit", "comment"), df = tmp)
+colns <- guess_colname(cols = c("expedition", "station", "sample_name", "date", "from", "to", "unit", "comment"), df = tmp)
 tmp <- tmp[colns]
 names(tmp) <- names(colns)
 
@@ -105,7 +122,7 @@ if(any(duplicated(tolower(levels(tmp$station))))) warning("Station names may con
 tmp$expedition <- factor(tmp$expedition)
 levels(tmp$expedition) <- gsub(" ", "", levels(tmp$expedition))
 levels(tmp$expedition) <- gsub("\\d", "", levels(tmp$expedition))
-
+levels(tmp$expedition) <- gsub("\\-", "", levels(tmp$expedition))
 ## Sample name and other known factors
 
 factor_cols <- c("type", "sample_name", "vessel", "unit")
@@ -136,32 +153,83 @@ meta <- droplevels(tmp)
 
 row.names(meta) <- 1:nrow(meta)
 
-# meta2 <- meta %>% group_by(expedition, station, longitude, latitude, date, vessel) %>% summarise(from = max(from), to = min(to)) %>% arrange(date, station)
-# meta2 <- as.data.frame(meta2)
-# write.xlsx(list("all_samples" = meta, "stations" = meta2), file = "kongsfjorden zooplankton metadata.xlsx")
+####################
+## Species list ####
 
-##############
-#### Data ####
-
-## Species information ####
-
+if(is.null(species_info_cols)) species_info_cols <- unname(unlist(control_species))
+  
 sp <- dt[species_info_cols]
 
+if(is.null(species_info_cols)) names(sp) <- names(unlist(control_species))
+
 if(is.list(control_species)) {
-  
+## ####  
+  sp$species <- gsub("\\b\\s\\s\\b", " ", sp$species, perl = TRUE)
   sp$species <- gsub("\\(cf.\\)", "", sp$species)
+  sp$species <- gsub(" cf. ", " ", sp$species)
+  sp$species <- gsub("\\(cf.\\s\\w+\\)", "", sp$species) # This removes any speculative species. Modify in data to counter.
   sp$species <- gsub(" Total", "", sp$species)
   sp$species <- gsub(" indet.", "", sp$species)
   sp$species <- trimws(sp$species)
+  
+  ## Typical typos
+  sp$species[sp$species == "Triconia (=Oncaea) borealis"] <- "Triconia borealis"
+  sp$species[sp$species == "Jashnovia brevis"] <- "Jaschnovia brevis"
+  sp$species[sp$species == "Hyperiidea"] <- "Hyperiidae"
+  sp$species[sp$species == "Isopoda Bopyridae"] <- "Bopyridae"
+  
+  sp[sp$species == "Calanoida nauplii", c("species", "stage")] <- c("Calanoida", "nauplii")
+  sp[sp$species == "Nemertea pilidium", c("species", "stage")] <- c("Nemertea", "pilidium")
+  
+  ## Id to sort columns
   sp$idno <- 1:nrow(sp)
   
-  sp <- merge(sp, ZOOPL[c("species", "stage", "length", "species_ID", lookup_cols)], by.x = unname(unlist(control_species)), by.y = c("species", "stage", "length"), all.x = TRUE, sort = FALSE)
+  ## Correct the old names to accepted ones 
+  # k <- sp$species[157]
+  sp$species <- sapply(sp$species, function(k) {
+    if(k %in% ZOOPL$species) {
+      k
+    } else if(k %in% ZOOPL$old_names) {
+      unique(ZOOPL[ZOOPL$old_names %in% k, "species"])
+    } else {
+      k
+    }
+  }, USE.NAMES = FALSE)
+  
+  ## Stage
+  sp$stage <- trimws(sp$stage)
+  sp$stage <- gsub("indet. ", "", sp$stage)
+  sp$stage[sp$stage == "AF AM" & !is.na(sp$stage)] <- "AF/AM"
+  sp$stage[sp$stage == "larvae furcilia" & !is.na(sp$stage)] <- "furcilia"
+  sp$stage[sp$stage == "larvae calyptopis" & !is.na(sp$stage)] <- "calyptopis"
+  sp$stage[sp$stage == "larvae trochophora" & !is.na(sp$stage)] <- "trochophora"
+  sp$stage[sp$stage == "larvae metatrochophora" & !is.na(sp$stage)] <- "metatrochophora"
+  sp$stage[sp$stage == "larvae mitraria" & !is.na(sp$stage)] <- "mitraria"
+  sp$stage[sp$stage == "parasitic nauplii" & !is.na(sp$stage)] <- "nauplii"
+  sp$stage <- trimws(sp$stage)
+  
+  ## Merge with ZOOPL
 
+  if(any(names(unlist(control_species)) %in% "size_op")) {
+    zoopl <- ZOOPL[c("species", "stage", "size_op", "length_old", "species_ID", lookup_cols)]
+    sp <- merge(sp, zoopl, by.x = unname(unlist(control_species)), by.y = c("species", "stage", "size_op", "length_old"), all.x = TRUE, sort = FALSE)
+  } else {
+    zoopl <- ZOOPL[c("species", "stage", "length", "species_ID", lookup_cols)]
+    sp <- merge(sp, zoopl, by.x = unname(unlist(control_species)), by.y = c("species", "stage", "length"), all.x = TRUE, sort = FALSE)
+  }
+  
   sp <- sp[order(sp$idno),]
   sp <- sp[!names(sp) %in% "idno"]
-  
+
+## ####  
   if(any(is.na(sp$species_ID))) {
+    
+    if(length(sp[is.na(sp$species_ID),"size_op"]) > 0) {
+      stop(paste(sp[is.na(sp$species_ID), "species"], collapse = " "), " may have size_op the wrong way round")
+    }
+    
     tmp <- sp[is.na(sp$species_ID), "species"]
+    
     sp$species_ID[is.na(sp$species_ID)] <- ifelse(nchar(tmp) > 8, abbreviate(tmp, minlength = 6), tmp)
   }
     
@@ -230,7 +298,8 @@ if(any(duplicated(sp$id))) {
 
 rownames(sp) <- 1:nrow(sp)
 
-## Abundance data ####
+##############
+#### Data ####
 
 if(is.null(dataCols)) {
 
@@ -247,9 +316,9 @@ dat <- t(dat)
 
 dat <- as.data.frame(dat, stringsAsFactors = FALSE)
 
-if(nrow(meta) != nrow(dat)) stop("Number of meta-data rows does not match with number of data rows. The error may be caused by the function not being able to define data columns correctly. Try using a numeric index in dataCols argument")
+if(nrow(meta) != nrow(dat)) stop("Number of meta-data rows does not match with number of data rows. The error may be caused by the function not being able to define data columns correctly (usual problem: there are blank columns for species data with information for meta-data). Try using a numeric index in dataCols argument or deleting the blank columns.")
 
-if(nrow(sp) != ncol(dat)) stop("Number of species list rows and data does not match. No idea why this happens. Try debugging the function section by section.")
+if(nrow(sp) != ncol(dat)) stop("Number of species list rows and data does not match. No idea why this happens. Possibly a typo in stage or size_op columns or then in ZOOPL. Try debugging the function section by section.")
 
 colnames(dat) <- sp$id
 rownames(dat) <- meta$id
@@ -314,6 +383,5 @@ return(out)
 
 }
 #write.xlsx(dat, file = "control_del.xlsx", row.names = TRUE)
-
 
 

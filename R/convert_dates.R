@@ -17,6 +17,8 @@
 #' @author Mikko Vihtakari
 #' @export 
 
+# Test parameters
+# dt = tmp; excel_file = data_file; file_ext = file_ext; output_format = output_format; add_time = 0; date_origin = "1899-12-30"
 convert_dates <- function(dt, excel_file = NULL, file_ext = NULL, add_time = 0, date_origin = "1899-12-30", output_format = "iso8601") {
 
 if(!is.null(excel_file)) file_ext <- MarineDatabase::select(strsplit(excel_file, "\\."), 2)
@@ -56,6 +58,11 @@ if(is.numeric(dt$date) & file_ext %in% c("xlsx", "xls")) {
       
       if(is.na(out) & grepl("\\.", k)) {
         out <- strptime(k, format = "%d.%m.%Y", tz = "UTC")
+        out <- out + add_time*3600
+      }
+      
+      if(is.na(out) & grepl("\\-", k)) {
+        out <- strptime(k, format = "%Y-%m-%d", tz = "UTC")
         out <- out + add_time*3600
       }
       

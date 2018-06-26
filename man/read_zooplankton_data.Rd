@@ -2,14 +2,14 @@
 % Please edit documentation in R/read_zooplankton_data.R
 \name{read_zooplankton_data}
 \alias{read_zooplankton_data}
-\title{Read NPI's zooplanton data from an Excel sheet}
+\title{Read NPI zooplanton data from an Excel sheet}
 \usage{
 read_zooplankton_data(data_file, sheet = 1, dataStart = 11,
-  dataEnd = 1000, dataCols = NULL, control_stations = TRUE,
-  output_format = "as.Date", add_coordinates = FALSE,
-  control_species = list(species = "species", stage = "stage", length =
-  "length"), species_info_cols = c("species", "stage", "length"),
-  lookup_cols = NULL, remove_missing = TRUE)
+  dataEnd = 1000, dataCols = NULL, output_format = "as.Date",
+  control_species = list(species = "species", stage = "stage", size_op = NULL,
+  length = "length"), lookup_cols = NULL, species_info_cols = NULL,
+  remove_missing = TRUE, control_stations = FALSE,
+  add_coordinates = FALSE)
 }
 \arguments{
 \item{data_file}{Path to the Excel file containing zooplankton data}
@@ -20,33 +20,45 @@ read_zooplankton_data(data_file, sheet = 1, dataStart = 11,
 
 \item{dataEnd}{The row number where zooplankton data ends}
 
-\item{dataCols}{Optional numeric index indicating the column numbers that contain zooplankton data}
-
-\item{control_stations}{Logical indicating whether station names should be controlled against a list of standardized station names (see \code{\link{STATIONS}}).}
+\item{dataCols}{Optional numeric index indicating the column numbers that contain zooplankton data. Not implemented yet.}
 
 \item{output_format}{Output formar for date. See \code{\link{convert_dates}}.}
 
-\item{add_coordinates}{If \code{TRUE} coordinates will be added to metadata from the list of standardized station names.}
+\item{control_species}{Either \code{NULL} or a named list giving the name of species, stage, size operator and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{\link{ZOOPL}}). Recommended. Setting this to \code{NULL} may lead to unexpected behaviour. The size operator (\code{size_op}) element is used to match old type zooplankton files (most of them) and can be ignored for the new standardized files by setting \code{size_op = NULL}.}
 
-\item{control_species}{Either \code{NULL} or a named list giving the name of species, stage and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{ZOOPL}). Recommended. Seetting this to \code{NULL} may lead to unexpected behaviour.}
+\item{lookup_cols}{Character vector specifying the names of columns from the zooplankton lookup list (\code{\link{ZOOPL}}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}.}
 
-\item{species_info_cols}{Character vector specifying the names of species information columns that should be preserved. If \code{control_species = TRUE}, the infomation will be used to match species entries agains the zooplankton lookup list (see \code{ZOOPL}).}
-
-\item{lookup_cols}{Character vector specifying the names of columns from the zooplankton lookup list (\code{ZOOPL}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}.}
+\item{species_info_cols}{Character vector specifying the names of species information columns that should be preserved. Required only if \code{control_species = NULL}, otherwise ignored. Adds some flexibility if species names are messed up, but use of \code{control_species} list is recommended.}
 
 \item{remove_missing}{Logical indicating whether species with column sums of 0 should be removed from the output.}
+
+\item{control_stations}{Logical indicating whether station names should be controlled against a list of standardized station names (see \code{\link{STATIONS}}). Should be \code{FALSE} for any other dataset than the standard monitoring (MOSJ) datasets.}
+
+\item{add_coordinates}{If \code{TRUE} coordinates will be added to metadata from the list of standardized station names.}
 }
 \value{
 Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).
 }
 \description{
-Reads NPI's standard format zooplankton data
+Reads IOPAN and NPI standard format zooplankton data
 }
 \details{
-The function sums up duplicate species entries for each sample. 
+Zooplankton taxonomy data from IOPAN are received in (more or less) standard format on MS Excel sheets. This function attempts to read that format and enable passing data to futher manipulation in R. The structure of the Excel sheet is explained in Figure 1. 
+
+\figure{zooplankton_data_sheet.png}{options: width=700}
+
+Figure 1. Example how zooplankton Excel sheets tend to be arranged. 
+ \enumerate{
+    \item \strong{Meta data} are arranged row-vise (with headers on rows) and should contain following fields: "expedition", "station", "sample_name", "date", "from", "to", "unit", and "comment". The field names will be \link[=guess_colname]{guessed}. If the function does not guess the names correctly, try changing the names to the required field names. The \code{dataCols} argument may be used as help to specify the column indices containing data to help the function (currently not implemented). 
+    \item \strong{Data} are listed column-wise for each station. Make sure that there are \strong{no blank data columns with meta data} (entirely blank columns are OK) as the function does not manage to separate such columns yet. Specify the row number for beginning (\code{dataStart}) of the data section. Rows > \code{dataStart} will be considered as meta data. The \code{dataEnd} argument can be used in cases where the sheet contains scrap data. Rows > \code{dataEnd} will be dropped. 
+    \item \strong{Species list} is arranged column-wise and the field headers should be listed in the \code{control_species} argument.
+    \item The correct Excel sheet containing all data is often named "ALL...", but this varies (purple text).
+}
+
+The function sums up duplicate species entries for each sample. The function attemps to match the species names in \code{data_file} with the accepted ones listed in \code{\link{ZOOPL}}. Sometimes this routine fails and manual fixes are required. 
 
 The function is currently relatively unstable and most likely requires manual debugging for each dataset.
 }
 \author{
-Mikko Vihtakari
+Mikko Vihtakari, Anette Wold
 }

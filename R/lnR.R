@@ -21,7 +21,6 @@
 #' @references Hedges, L. V, Gurevitch, J., & Curtis, P.S. (1999) The meta-analysis of response ratios in experimental ecology. Ecology, 80, 1150–1156. 
 #' @import reshape2 broom
 #' @author Mikko Vihtakari
-#' @example # make some...
 #' @export
 
 ## Test parameters
