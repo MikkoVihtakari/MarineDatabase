@@ -31,7 +31,7 @@ convert_abundance <- function(data, ab_col, ab_from = NULL, ab_to = NULL, filter
   
   ## Switches
   
-  cm.switch <- NULL
+  cm.switch <- FALSE
   
   ### Conversions ####
   
@@ -49,7 +49,7 @@ convert_abundance <- function(data, ab_col, ab_from = NULL, ab_to = NULL, filter
       data[[ab_col]] <- indL2indm2(data = data, ab.cols = ab_col, sec.start = start_col, sec.end = end_col, cf. = cf)
       data[[unit_col]] <- "1/m2"
       
-      if(!is.null(cm.switch)) {
+      if(cm.switch) {
       data[[start_col]] <- data[[start_col]]*100
       data[[end_col]] <- data[[end_col]]*100
       data
@@ -71,13 +71,13 @@ convert_abundance <- function(data, ab_col, ab_from = NULL, ab_to = NULL, filter
 
 ## To calculate Ind/m2 values from Ind
 ind2indm2 <- function(data, ab.cols, V = "Volume", sec.start = "Sec.start", sec.end = "Sec.end", cf. = cf) { 
-  return(ind2indL(data, ab.cols, V, cf)*1000*((data[[sec.end]]-data[[sec.start]])/100))
+  return(ind2indL(data, ab.cols, V, cf)*((data[[sec.end]]-data[[sec.start]])/100))
 }
 
 
 ## To calculate Ind/m2 values from Ind/L
 indL2indm2 <- function(data, ab.cols, sec.start, sec.end, cf.) { 
-  return((data[[c(ab.cols)]]*cf.*((data[[sec.end]]-data[[sec.start]]))))
+  return((1000*data[[c(ab.cols)]]*cf.*((data[[sec.end]]-data[[sec.start]]))))
   }
 
 ## To calcule Ind/L values from Ind

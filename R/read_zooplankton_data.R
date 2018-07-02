@@ -12,6 +12,7 @@
 #' @param species_info_cols Character vector specifying the names of species information columns that should be preserved. Required only if \code{control_species = NULL}, otherwise ignored. Adds some flexibility if species names are messed up, but use of \code{control_species} list is recommended.
 #' @param lookup_cols Character vector specifying the names of columns from the zooplankton lookup list (\code{\link{ZOOPL}}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}. 
 #' @param remove_missing Logical indicating whether species with column sums of 0 should be removed from the output.
+#' @param control_sample_names Logical indicating whether non-standard symbols in sample names should be replaced by standardized equivalents. May fix problems when trying to merge zooplankton samples with meta data from another file. These names tend to have typos. 
 #' @return Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).
 #' @details Zooplankton taxonomy data from IOPAN are received in (more or less) standard format on MS Excel sheets. This function attempts to read that format and enable passing data to futher manipulation in R. The structure of the Excel sheet is explained in Figure 1. 
 #' 
@@ -39,7 +40,7 @@
 # data_file = "Data/Kongsfjord_zooplankton_2005.xlsx"; sheet = "Arkusz1"; dataStart = 11; dataEnd = 1000; control_stations = TRUE; output_format = "as.Date"; species_info_cols = c("species", "stage", "length"); lookup_cols = c("size_group", "origin", "biomass_conv"); add_coordinates = TRUE; control_species = list(species = "species", stage = "stage", length = "length"); dataCols = NULL
 
 
-read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 1000, dataCols = NULL, output_format = "as.Date", control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"), lookup_cols = NULL, species_info_cols = NULL, remove_missing = TRUE, control_stations = FALSE, add_coordinates = FALSE) {
+read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 1000, dataCols = NULL, output_format = "as.Date", control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"), lookup_cols = NULL, species_info_cols = NULL, remove_missing = TRUE, control_stations = FALSE, add_coordinates = FALSE, control_sample_names = TRUE) {
 
 ## Switches
 
@@ -123,6 +124,13 @@ tmp$expedition <- factor(tmp$expedition)
 levels(tmp$expedition) <- gsub(" ", "", levels(tmp$expedition))
 levels(tmp$expedition) <- gsub("\\d", "", levels(tmp$expedition))
 levels(tmp$expedition) <- gsub("\\-", "", levels(tmp$expedition))
+
+### Sample names
+
+if(control_sample_names) {
+  tmp$sample_name <- gsub("_", "-", as.character(tmp$sample_name))
+}
+
 ## Sample name and other known factors
 
 factor_cols <- c("type", "sample_name", "vessel", "unit")

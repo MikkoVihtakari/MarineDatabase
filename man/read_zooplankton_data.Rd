@@ -9,7 +9,7 @@ read_zooplankton_data(data_file, sheet = 1, dataStart = 11,
   control_species = list(species = "species", stage = "stage", size_op = NULL,
   length = "length"), lookup_cols = NULL, species_info_cols = NULL,
   remove_missing = TRUE, control_stations = FALSE,
-  add_coordinates = FALSE)
+  add_coordinates = FALSE, control_sample_names = TRUE)
 }
 \arguments{
 \item{data_file}{Path to the Excel file containing zooplankton data}
@@ -35,6 +35,8 @@ read_zooplankton_data(data_file, sheet = 1, dataStart = 11,
 \item{control_stations}{Logical indicating whether station names should be controlled against a list of standardized station names (see \code{\link{STATIONS}}). Should be \code{FALSE} for any other dataset than the standard monitoring (MOSJ) datasets.}
 
 \item{add_coordinates}{If \code{TRUE} coordinates will be added to metadata from the list of standardized station names.}
+
+\item{control_sample_names}{Logical indicating whether non-standard symbols in sample names should be replaced by standardized equivalents. May fix problems when trying to merge zooplankton samples with meta data from another file. These names tend to have typos.}
 }
 \value{
 Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).

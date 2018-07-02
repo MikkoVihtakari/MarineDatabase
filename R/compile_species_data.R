@@ -10,7 +10,7 @@
 #' @param end_col Character argument specifying the name of the column in \code{dat} for the section end for the ice core in centimeters or meters.
 #' @param ice_thick_col Character argument specifying the name of the column in \code{dat} for ice thickness preferably in \strong{centimeters}
 #' @param add_cols A character vector containing names of the additional columns that should be included in the output. These columns are not used by the function otherwise. Additional columns cannot contain several unique values due to summarizing process.
-#' @param convert_unit List or \code{NULL}. Should the function convert supplied abundances using the \code{\link{convert_abundace}} function, a list giving \code{from} and \code{to} units have to be supplied. If conversion should not be made, use \code{NULL} (default). See details for alternatives.
+#' @param convert_unit List or \code{NULL}. Should the function convert supplied abundances using the \code{\link{convert_abundance}} function, a list giving \code{from} and \code{to} units have to be supplied. If conversion should not be made, use \code{NULL} (default). See details for alternatives.
 #' @param summarise_cores Logical. Should core sections be summarized to a continuous core? If \code{TRUE} (default), all sections are summarized, \code{start_col} and \code{end_col} removed from the output, and a \code{$core_type} column added. If \code{FALSE} core sections are returned as they are, but duplicate species names are summed up.
 #' @param return_summary Logical. Should summary statistics be returned?
 #' @param round_digits Number of digits \code{start_col}, \code{end_col} and \code{ice_thick_col} values should be rounded to. Set to \code{NULL} to avoid rounding. See \code{\link[base]{round}} for details.
@@ -124,11 +124,11 @@ k <- do.call(rbind, z)
 
 ## Remove high abundances of symbionts and spores (M. rubrum)
 
-symbs <- splist[which((splist$type %in% "symbiont" & splist$use_name %in% "Mesodinium rubrum") | splist$type %in% "spore"), "or_name"]
-
-if(any(levels(k[[sp_col]]) %in% symbs)) {
-  k[k[[sp_col]] %in% symbs, ab_col] <- 1
-}
+# symbs <- splist[which((splist$type %in% "symbiont" & splist$use_name %in% "Mesodinium rubrum") | splist$type %in% "spore"), "or_name"]
+# 
+# if(any(levels(k[[sp_col]]) %in% symbs)) {
+#   k[k[[sp_col]] %in% symbs, ab_col] <- 1
+# }
 
 ## Rename species
 k_og <- k
