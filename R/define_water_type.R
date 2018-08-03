@@ -10,13 +10,16 @@
 #' @author Mikko Vihtakari
 #' @export
 
-# dt <- dat; temp_col <- "Temp"; sal_col <- "Sal"
+# dt <- ctd; temp_col = "theta"; sal_col = "salinity"
 define_water_type <- function(dt, temp_col = "temp", sal_col = "sal", bind = FALSE, return_water_type_list = FALSE) {
 
 waters <- c("Atlantic Water", "Arctic Water", "Winter Cooled Water", "Local Water", "Surface Water", "Transformed Atlantic Water", "Intermediate Water")
 abbrs <- c("AW", "ArW", "WCW", "LW", "SW", "TAW", "IW")
 
-WM <- data.frame(Type = waters, Abb = abbrs, y.min = c(3, -0.5, -Inf, -0.5, 1, 1, 1), y.max = c(Inf, 1, -0.5, 1, Inf, 3, Inf), x.min = c(34.65, 34.30, 34.40, 34.30, -Inf, 34.65, 34), x.max = c(Inf, 35.00, 35.00, 34.85, 34, Inf, 34.65), x = c(34.95, 34.6, 34.7, 34.3, 28.3, 35.0, 34.25), y = c(8.5, 0.8, -0.7, -0.5, 8.5, 2.8, 8.5), stringsAsFactors = FALSE) 
+ymaxp <- Inf
+xminp <- -Inf
+
+WM <- data.frame(Type = waters, Abb = abbrs, y.min = c(3, -1.5, -Inf, -0.5, 1, 1, 1), y.max = c(Inf, 1, -0.5, 1, Inf, 3, Inf), x.min = c(34.65, 34.30, 34.40, 34.30, -Inf, 34.65, 34), x.max = c(Inf, 34.80, 35.00, 34.85, 34, Inf, 34.65), x = c(34.95, 34.6, 34.7, 34.3, -Inf, 35.0, 34.25), y = c(ymaxp, 0.8, -0.7, -0.5, ymaxp, 2.8, ymaxp), stringsAsFactors = FALSE) 
 WM <- WM[!WM$Abb %in% c("LW"),]
 
 if(return_water_type_list) {
@@ -37,6 +40,7 @@ watertype <- sapply(1:nrow(dt), function(i) {
   index <- dt[[i, sal_col]] > WM$x.min & dt[[i, sal_col]] <= WM$x.max & dt[[i, temp_col]] > WM$y.min & dt[[i, temp_col]] <= WM$y.max
   out <- WM[index, "Abb"]
   
+  if(length(out) == 2 & all(out %in% c("ArW", "WCW"))) out <- "WCW"
   if(length(out) > 1) stop("Several water types matched")
   if(length(out) == 0) out <- "Other"
   
