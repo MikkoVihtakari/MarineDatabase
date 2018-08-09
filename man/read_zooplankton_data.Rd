@@ -4,21 +4,22 @@
 \alias{read_zooplankton_data}
 \title{Read NPI zooplanton data from an Excel sheet}
 \usage{
-read_zooplankton_data(data_file, sheet = 1, dataStart = 11,
+read_zooplankton_data(data_file, sheet = 1, dataStart = NULL,
   dataEnd = 1000, dataCols = NULL, output_format = "as.Date",
   control_species = list(species = "species", stage = "stage", size_op = NULL,
-  length = "length"), lookup_cols = NULL, species_info_cols = NULL,
-  remove_missing = TRUE, control_stations = FALSE,
-  add_coordinates = FALSE, control_sample_names = TRUE)
+  length = "length"), lookup_cols = "biomass_conv",
+  species_info_cols = NULL, remove_missing = TRUE,
+  control_stations = FALSE, add_coordinates = FALSE,
+  control_sample_names = TRUE, round2ceiling = FALSE)
 }
 \arguments{
 \item{data_file}{Path to the Excel file containing zooplankton data}
 
 \item{sheet}{The name or index of the sheet to read the zooplanton data from. See \code{\link[openxlsx]{read.xlsx}}}
 
-\item{dataStart}{The row number where zooplanton data starts from}
+\item{dataStart}{The row number where zooplanton data starts from. If \code{NULL} (default), the starting row number is guessed based on the first record of "Calanus finmarchicus".}
 
-\item{dataEnd}{The row number where zooplankton data ends}
+\item{dataEnd}{The row number where zooplankton data ends. Larger than real row numbers in data are ignored. The default is 1000. Set to a higher value, if your dataset has more rows than that.}
 
 \item{dataCols}{Optional numeric index indicating the column numbers that contain zooplankton data. Not implemented yet.}
 
@@ -37,6 +38,8 @@ read_zooplankton_data(data_file, sheet = 1, dataStart = 11,
 \item{add_coordinates}{If \code{TRUE} coordinates will be added to metadata from the list of standardized station names.}
 
 \item{control_sample_names}{Logical indicating whether non-standard symbols in sample names should be replaced by standardized equivalents. May fix problems when trying to merge zooplankton samples with meta data from another file. These names tend to have typos.}
+
+\item{round2ceiling}{Logical indicating whether decimals should be rounded to ceiling integers: some Polish data come rounded this way and combining data may require standardizing all values to ceiling integers.}
 }
 \value{
 Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).

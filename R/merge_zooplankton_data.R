@@ -20,6 +20,7 @@ merge_zooplankton_data <- function(x, y) {
   meta <- rbind.fill(x$meta, y$meta)
   
   meta <- meta[order(meta$id),]
+  rownames(meta) <- 1:nrow(meta)
   
   ## Species list ####
   

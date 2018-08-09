@@ -2,8 +2,8 @@
 #' @description Reads IOPAN and NPI standard format zooplankton data
 #' @param data_file Path to the Excel file containing zooplankton data
 #' @param sheet The name or index of the sheet to read the zooplanton data from. See \code{\link[openxlsx]{read.xlsx}}
-#' @param dataStart The row number where zooplanton data starts from
-#' @param dataEnd The row number where zooplankton data ends
+#' @param dataStart The row number where zooplanton data starts from. If \code{NULL} (default), the starting row number is guessed based on the first record of "Calanus finmarchicus". 
+#' @param dataEnd The row number where zooplankton data ends. Larger than real row numbers in data are ignored. The default is 1000. Set to a higher value, if your dataset has more rows than that. 
 #' @param dataCols Optional numeric index indicating the column numbers that contain zooplankton data. Not implemented yet.
 #' @param control_stations Logical indicating whether station names should be controlled against a list of standardized station names (see \code{\link{STATIONS}}). Should be \code{FALSE} for any other dataset than the standard monitoring (MOSJ) datasets.
 #' @param output_format Output formar for date. See \code{\link{convert_dates}}.
@@ -13,6 +13,7 @@
 #' @param lookup_cols Character vector specifying the names of columns from the zooplankton lookup list (\code{\link{ZOOPL}}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}. 
 #' @param remove_missing Logical indicating whether species with column sums of 0 should be removed from the output.
 #' @param control_sample_names Logical indicating whether non-standard symbols in sample names should be replaced by standardized equivalents. May fix problems when trying to merge zooplankton samples with meta data from another file. These names tend to have typos. 
+#' @param round2ceiling Logical indicating whether decimals should be rounded to ceiling integers: some Polish data come rounded this way and combining data may require standardizing all values to ceiling integers.  
 #' @return Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).
 #' @details Zooplankton taxonomy data from IOPAN are received in (more or less) standard format on MS Excel sheets. This function attempts to read that format and enable passing data to futher manipulation in R. The structure of the Excel sheet is explained in Figure 1. 
 #' 
@@ -40,9 +41,9 @@
 # data_file = "Data/Kongsfjord_zooplankton_2005.xlsx"; sheet = "Arkusz1"; dataStart = 11; dataEnd = 1000; control_stations = TRUE; output_format = "as.Date"; species_info_cols = c("species", "stage", "length"); lookup_cols = c("size_group", "origin", "biomass_conv"); add_coordinates = TRUE; control_species = list(species = "species", stage = "stage", length = "length"); dataCols = NULL
 
 
-read_zooplankton_data <- function(data_file, sheet = 1, dataStart = 11, dataEnd = 1000, dataCols = NULL, output_format = "as.Date", control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"), lookup_cols = NULL, species_info_cols = NULL, remove_missing = TRUE, control_stations = FALSE, add_coordinates = FALSE, control_sample_names = TRUE) {
+read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEnd = 1000, dataCols = NULL, output_format = "as.Date", control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"), lookup_cols = "biomass_conv", species_info_cols = NULL, remove_missing = TRUE, control_stations = FALSE, add_coordinates = FALSE, control_sample_names = TRUE, round2ceiling = FALSE) {
 
-## Switches
+## Switches ####
 
 duplicate_sp <- FALSE
 
@@ -50,7 +51,7 @@ if(!is.null(dataCols)) stop("dataCols argument has not been implemented yet.")
 if(!is.null(control_species) & any(names(control_species) != c("species", "stage", "size_op", "length"))) stop("control_species has to be either NULL or a named list with elements species, stage, size_op, length. See Usage for an example, Arguments and Details for explanation")
 
 
-## Open the file ####
+## Open the file ###
   
 if(is.data.frame(data_file)) {
   stop("Other read methods than Excel have not been implemented yet")
@@ -60,6 +61,12 @@ if(is.data.frame(data_file)) {
   file_ext <- get_file_ext(data_file)
 
   if(file_ext %in% c("xlsx", "xls")) {
+    
+    if(is.null(dataStart)) {
+      tmp <- openxlsx::read.xlsx(data_file, sheet = sheet)[1]
+      dataStart <- which(trimws(tmp[[1]]) == "Calanus finmarchicus")[1]
+    }
+    
     dt <- openxlsx::read.xlsx(data_file, sheet = sheet, startRow = dataStart, rows = dataStart:dataEnd)
     meta <- openxlsx::read.xlsx(data_file, sheet = sheet, startRow = 1, rows = 1:(dataStart-1), colNames = FALSE)
     meta <- t(meta)
@@ -171,7 +178,7 @@ sp <- dt[species_info_cols]
 if(is.null(species_info_cols)) names(sp) <- names(unlist(control_species))
 
 if(is.list(control_species)) {
-## ####  
+## ###  
   sp$species <- gsub("\\b\\s\\s\\b", " ", sp$species, perl = TRUE)
   sp$species <- gsub("\\(cf.\\)", "", sp$species)
   sp$species <- gsub(" cf. ", " ", sp$species)
@@ -229,7 +236,7 @@ if(is.list(control_species)) {
   sp <- sp[order(sp$idno),]
   sp <- sp[!names(sp) %in% "idno"]
 
-## ####  
+## ###  
   if(any(is.na(sp$species_ID))) {
     
     if(length(sp[is.na(sp$species_ID),"size_op"]) > 0) {
@@ -331,6 +338,20 @@ if(nrow(sp) != ncol(dat)) stop("Number of species list rows and data does not ma
 colnames(dat) <- sp$id
 rownames(dat) <- meta$id
 dat[is.na(dat)] <- 0
+
+if(round2ceiling) {
+  dat <- as.data.frame(apply(dat, 2, ceiling))
+} else {
+  
+  tmp <- sapply(1:nrow(dat), function(i) {
+    x <- as.numeric(dat[i,])
+    #all(abs(c(x%%1, x%%1-1)) < .Machine$double.eps^0.5)
+    all(x %% 1 == 0)
+  })
+  
+  if(any(tmp)) warning("Some of the samples appear to be rounded to closest integer (probably ceiling). Consider round2ceiling = TRUE to standardize the numbers. Alternatively fix the precision.")
+  
+}
 
 ################################
 ## Sum up duplicate species ####

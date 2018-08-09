@@ -7,13 +7,16 @@
 #' @param zoom logical indicating whether the x- and y-axis should be limited to data. If \code{FALSE}, the entire water mass diagram from Cottier et al. is shown.
 #' @param margin_distr logical indicating whether kernel density estimates of temperature and salinity should be added to margins of the plot.
 #' @param nlevels Number of automatically-selected isopycnal levels. Set to 0 to remove isopycnals.
+#' @param symbol_shape
+#' @param symbol_size
+#' @param symbol_alpha
 #' @references Cottier, F., Tverberg, V., Inall, M., Svendsen, H., Nilsen, F., Griffiths, C., 2005. Water mass modification in an Arctic fjord through cross-shelf exchange: The seasonal hydrography of Kongsfjorden, Svalbard. J. Geophys. Res. 110, C12005. doi:10.1029/2004JC002757
 #' @seealso \code{\link{define_water_type}}
 #' @import ggplot2 patchwork 
 #' @export
 
 #dt <- ctd; temp_col = "theta"; sal_col = "salinity"; xlim = NULL; ylim = NULL; color = "watertype"; zoom = TRUE; margin_distr = FALSE; nlevels = 4
-ts_plot <- function(dt, temp_col = "theta", sal_col = "salinity", xlim = NULL, ylim = NULL, color = "watertype", zoom = TRUE, margin_distr = FALSE, nlevels = 6) {
+ts_plot <- function(dt, temp_col = "theta", sal_col = "salinity", xlim = NULL, ylim = NULL, color = "watertype", zoom = TRUE, margin_distr = FALSE, nlevels = 6, symbol_shape = 1, symbol_size = 3, symbol_alpha = 0.6) {
 
 ## Water types ####
 
@@ -28,6 +31,8 @@ if(is.null(xlim) & zoom) {
 } else if(is.null(xlim)) {
   xbreaks <- pretty(range(c(dt[[sal_col]], c(32, 35))), n = nlevels)
   xlim <- range(xbreaks)
+} else {
+  xbreaks <- pretty(xlim)
 }
 
 if(is.null(ylim) & zoom) {
@@ -36,6 +41,8 @@ if(is.null(ylim) & zoom) {
 } else if(is.null(ylim)) {
   ybreaks <- pretty(range(c(dt[[temp_col]], c(-2, 8))), n = nlevels)
   ylim <- range(ybreaks)
+} else {
+  ybreaks <- pretty(ylim)
 }
 
 ## Isopycnals
@@ -110,7 +117,7 @@ polycol <- "grey30"
 
 p <- p + 
   geom_polygon(data = WMpoly, aes(x = x, y = y, group = Abb), fill = NA, color = polycol, size = LS(0.5)) + 
-  geom_point(data = dt, aes_string(x = sal_col, y = temp_col, color = color), shape=1, alpha = 0.6, size = 3, stroke = LS(1)) + 
+  geom_point(data = dt, aes_string(x = sal_col, y = temp_col, color = color), shape = symbol_shape, alpha = symbol_alpha, size = symbol_size) + 
   geom_text(data = WMtext, aes(x = x, y = y, label = Abb), size = FS(8), vjust = 1.2, hjust = -0.3, color = polycol) + 
   coord_cartesian(xlim = xlim, ylim = ylim, expand = FALSE) +
   scale_y_continuous(expression(paste("Potential temperature (", ~degree, "C", ")")), breaks = ybreaks) + 

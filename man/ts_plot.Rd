@@ -6,7 +6,7 @@
 \usage{
 ts_plot(dt, temp_col = "theta", sal_col = "salinity", xlim = NULL,
   ylim = NULL, color = "watertype", zoom = TRUE, margin_distr = FALSE,
-  nlevels = 6)
+  nlevels = 6, symbol_shape = 1, symbol_size = 3, symbol_alpha = 0.6)
 }
 \arguments{
 \item{dt}{data frame.}
