@@ -4,7 +4,8 @@
 \alias{process_cdom_data}
 \title{Process CDOM data from Excel sheets}
 \usage{
-process_cdom_data(data_file, sheet = "all", blank_correction = "One milliQ")
+process_cdom_data(data_file, sheet = "all",
+  blank_correction = "One milliQ")
 }
 \arguments{
 \item{data_file}{Name of the excel file containing the dataset to be exported.}

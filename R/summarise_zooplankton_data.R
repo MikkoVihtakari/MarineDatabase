@@ -24,6 +24,8 @@
 # obj = dt; biomass = FALSE; sp_group = "origin"; meta_group = c("expedition" ,"station", "lon", "lat", "lon.utm", "lat.utm", "date"); meta_group_method = "depth_mean"; remove_noncont = FALSE; warnings = TRUE
 # obj = dt; sp_group = NULL; meta_group = NULL; meta_group_method = "depth_mean"; biomass = TRUE; remove_noncont = FALSE; warnings = TRUE
 # obj = tp; sp_group = NULL; meta_group = c("expedition" , "station", "area", "bottom_depth", "lon", "lat", "lon.utm", "lat.utm", "date");  meta_group_method = "total_sum"; biomass = TRUE; remove_noncont = FALSE; warnings = TRUE
+# obj = dt; biomass = TRUE; sp_group = "species"; meta_group = NULL; meta_group_method = "none"; remove_noncont = FALSE; warnings = TRUE
+
 
 summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, meta_group_method = "depth_mean", biomass = FALSE, remove_noncont = FALSE, warnings = TRUE) {
 
@@ -96,7 +98,7 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
     dat <- dat %>% group_by(id, sp_id) %>% summarise(value = sum(value, na.rm = TRUE))  
   }
   
-  ## Summarize species data ###
+  ## Summarize species data ####
   
   if(!is.null(meta_group)) {
     
@@ -166,6 +168,9 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
       dat <- dat[!names(dat) %in% meta_group]
     }
     
+  ## If is.null(meta_group):  
+  } else {
+    
     
   }
   
@@ -177,6 +182,9 @@ if(all(c("id", "sp_id", "value") %in% names(dat))) {
   rownames(dat) <- dat$id
   dat <- dat[!names(dat) %in% "id"]
 }
+
+## Make sure that the order of meta and dat matches:
+dat <- dat[match(meta$id, rownames(dat)),]
 
   if(any(is.na(dat))) dat[is.na(dat)] <- 0
   if(nrow(meta) != nrow(dat)) stop("nrow between data and meta differ.")

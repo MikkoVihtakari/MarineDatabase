@@ -4,9 +4,9 @@
 \alias{lnR}
 \title{Calculate logarithmic response ratio from a long table}
 \usage{
-lnR(X, response, levels, groups, control, ci.type = NULL, ci.conf = 0.95,
-  paired_tests = FALSE, unlog = FALSE, all.data = FALSE, signif = 2,
-  sqrt_transform = FALSE)
+lnR(X, response, levels, groups, control, ci.type = NULL,
+  ci.conf = 0.95, paired_tests = FALSE, unlog = FALSE,
+  all.data = FALSE, signif = 2, sqrt_transform = FALSE)
 }
 \arguments{
 \item{X}{data frame}

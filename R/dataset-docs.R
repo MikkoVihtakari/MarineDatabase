@@ -1,9 +1,25 @@
+#' @name rijpfjord_watermasses
+#' @title Water mass definitions for Rijpfjorden
+#' @description A dataframe containing water mass definitions for Rijpfjorden. 
+#' @docType data
+#' @usage data("rijpfjord_watermasses")
+#' @format data.frame 
+NULL
+
+#' @name kongsfjord_watermasses
+#' @title Water mass definitions for Kongsfjorden
+#' @description A dataframe containing water mass definitions for Kongsfjorden. An example of formatting of the \code{WM} argument in \code{\link{define_water_type}}
+#' @docType data
+#' @usage data("kongsfjord_watermasses")
+#' @format data.frame 
+NULL
+
 #' @name GEAR
 #' @title Gear types
 #' @description A dataframe containing allowed gear types.
 #' @docType data
 #' @usage data("gear_types")
-#' @format a data.frame 
+#' @format data.frame 
 NULL
 
 
@@ -12,7 +28,7 @@ NULL
 #' @description A dataframe containing allowed sample codes.
 #' @docType data
 #' @usage data("sample_types")
-#' @format A data.frame 
+#' @format data.frame 
 NULL
 
 #' @name STATIONS
@@ -20,7 +36,7 @@ NULL
 #' @description A dataframe containing standardized station names.
 #' @docType data
 #' @usage data("stations")
-#' @format A data.frame 
+#' @format data.frame 
 NULL
 
 #' @name ZOOPL
@@ -40,5 +56,5 @@ NULL
 #' }
 #' @docType data
 #' @usage data("ZOOPL")
-#' @format A data.frame 
+#' @format data.frame 
 NULL

@@ -6,9 +6,10 @@
 \usage{
 read_metadata(meta_file, sheet = 1, additional = NULL, add_time = 0,
   date_origin = "1899-12-30", expedition = NULL, station = NULL,
-  type = NULL, sample_name = NULL, longitude = NULL, latitude = NULL,
-  date = NULL, bottom_depth = NULL, gear = NULL, from = NULL,
-  to = NULL, responsible = NULL, comment = NULL, guess_colnames = TRUE)
+  type = NULL, sample_name = NULL, longitude = NULL,
+  latitude = NULL, date = NULL, bottom_depth = NULL, gear = NULL,
+  from = NULL, to = NULL, responsible = NULL, comment = NULL,
+  guess_colnames = TRUE)
 }
 \arguments{
 \item{meta_file}{File name of the meta-data table or a data frame containing meta-data. If file name, the file has to have \code{.xlsx} extension.}

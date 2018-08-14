@@ -6,11 +6,12 @@
 \title{Compile species data from ice cores}
 \usage{
 compile_species_data(dat, splist, core_cols = c("expedition", "station",
-  "core.id"), sp_col = "species", ab_col = "abundance", unit_col = "unit",
-  start_col = "from", end_col = "to", ice_thick_col = "ice",
-  add_cols = c("gear", "longitude", "latitude", "date", "bottom_depth",
-  "ice.type", "snow"), convert_unit = list(from = "1/L", to = "1/m2"),
-  summarise_cores = TRUE, return_summary = TRUE, round_digits = 0)
+  "core.id"), sp_col = "species", ab_col = "abundance",
+  unit_col = "unit", start_col = "from", end_col = "to",
+  ice_thick_col = "ice", add_cols = c("gear", "longitude", "latitude",
+  "date", "bottom_depth", "ice.type", "snow"), convert_unit = list(from =
+  "1/L", to = "1/m2"), summarise_cores = TRUE, return_summary = TRUE,
+  round_digits = 0)
 }
 \arguments{
 \item{dat}{data frame containing ice core species data to be combined. Must be in long format.}

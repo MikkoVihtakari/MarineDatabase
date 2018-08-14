@@ -4,7 +4,7 @@
 \name{GEAR}
 \alias{GEAR}
 \title{Gear types}
-\format{a data.frame}
+\format{data.frame}
 \usage{
 data("gear_types")
 }

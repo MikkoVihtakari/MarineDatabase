@@ -6,8 +6,8 @@
 \usage{
 read_zooplankton_data(data_file, sheet = 1, dataStart = NULL,
   dataEnd = 1000, dataCols = NULL, output_format = "as.Date",
-  control_species = list(species = "species", stage = "stage", size_op = NULL,
-  length = "length"), lookup_cols = "biomass_conv",
+  control_species = list(species = "species", stage = "stage", size_op =
+  NULL, length = "length"), lookup_cols = "biomass_conv",
   species_info_cols = NULL, remove_missing = TRUE,
   control_stations = FALSE, add_coordinates = FALSE,
   control_sample_names = TRUE, round2ceiling = FALSE)
