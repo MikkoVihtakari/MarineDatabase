@@ -1,3 +1,19 @@
+#' @name ctd_rijpfjord
+#' @title Example CTD data for Rijpfjorden
+#' @description A dataframe containing example CTD data for Rijpfjorden. 
+#' @docType data
+#' @usage data("ctd_rijpfjord")
+#' @format data.frame 
+NULL
+
+#' @name ctd_kongsfjord
+#' @title Example CTD data for Kongsfjorden
+#' @description A dataframe containing example CTD data for Kongsfjorden. 
+#' @docType data
+#' @usage data("ctd_kongsfjord")
+#' @format data.frame 
+NULL
+
 #' @name rijpfjord_watermasses
 #' @title Water mass definitions for Rijpfjorden
 #' @description A dataframe containing water mass definitions for Rijpfjorden. 

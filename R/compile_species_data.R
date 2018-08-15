@@ -10,7 +10,7 @@
 #' @param end_col Character argument specifying the name of the column in \code{dat} for the section end for the ice core in centimeters or meters.
 #' @param ice_thick_col Character argument specifying the name of the column in \code{dat} for ice thickness preferably in \strong{centimeters}
 #' @param add_cols A character vector containing names of the additional columns that should be included in the output. These columns are not used by the function otherwise. Additional columns cannot contain several unique values due to summarizing process.
-#' @param convert_unit List or \code{NULL}. Should the function convert supplied abundances using the \code{\link{convert_abundance}} function, a list giving \code{from} and \code{to} units have to be supplied. If conversion should not be made, use \code{NULL} (default). See details for alternatives.
+#' @param convert_unit List or \code{NULL}. Should the function convert supplied abundances using the \code{\link[=convert_abundance]{convert_abundance}} function, a list giving \code{from} and \code{to} units have to be supplied. If conversion should not be made, use \code{NULL} (default). See details for alternatives.
 #' @param summarise_cores Logical. Should core sections be summarized to a continuous core? If \code{TRUE} (default), all sections are summarized, \code{start_col} and \code{end_col} removed from the output, and a \code{$core_type} column added. If \code{FALSE} core sections are returned as they are, but duplicate species names are summed up.
 #' @param return_summary Logical. Should summary statistics be returned?
 #' @param round_digits Number of digits \code{start_col}, \code{end_col} and \code{ice_thick_col} values should be rounded to. Set to \code{NULL} to avoid rounding. See \code{\link[base]{round}} for details.
@@ -22,7 +22,7 @@
 #'   \item \strong{\code{list(from = "per", to = "per")}}: percentage abundances are summed up according to the \code{summarise_cores} argument and scaled to 100 \% (sum for an ice core or a section adds up to 100 \%).
 #'   \item \strong{\code{list(from = "rel", to = "rel")}}: relative abundances are summed up by taking a mean for duplicate species or entire ice cores (if \code{summarise_cores = TRUE}).
 #'   \item \strong{\code{list(from = "rel", to = "per")}}: relative abundances are first summed up and a percentage of their contribution is calculated. Abundances add up to 100 \% for an ice core or a section depending on the \code{summarise_cores} argument.
-#'   \item \strong{\code{list(from = "1/L", to = "1/m2")}} (or any other variations passed to \code{\link{convert_abundace}}): Individuals per litre values converted to individuals per square metre before summing up abundances (see \code{summarise_cores} argument)
+#'   \item \strong{\code{list(from = "1/L", to = "1/m2")}} (or any other variations passed to \code{\link[=convert_abundance]{convert_abundace}}): Individuals per litre values converted to individuals per square metre before summing up abundances (see \code{summarise_cores} argument)
 #'   }
 #' 
 #' @return Returns a data frame with columns specified in arguments. Drops any unspecified column.

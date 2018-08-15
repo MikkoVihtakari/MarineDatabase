@@ -5,6 +5,8 @@
 #' @param temp_col character specifying the column name that contains temperature information. Should be potential temperatures (theta) instead of in-situ tempretatures, if default \code{WM} is used.
 #' @param WM dataframe containing the water type definitions for polygons boundaries for water types. Set to \code{NULL} to remove the polygon boundaries. See Details in \code{\link{define_water_type}} for further details. 
 #' @param color character indicating the mapping variable for color. Either a single character from \code{\link[grDevices]{colors}}, "watertype" or column name in \code{dt}. If \code{"watertype"}, the symbols are colored based on water type using a prededined palette. If the character specifies a valid color, that color is used for the data symbols. 
+#' @param xlim numeric vector specifying th limits for x-axis. If \code{NULL}, the \code{zoom} argument is used.
+#' @param ylim numeric vector specifying th limits for y-axis. If \code{NULL}, the \code{zoom} argument is used.
 #' @param zoom logical indicating whether the x- and y-axis should be limited to data. If \code{FALSE}, the entire water mass diagram from the \code{WM} data frame is shown.
 #' @param margin_distr logical indicating whether kernel density estimates of temperature and salinity should be added to margins of the plot.
 #' @param nlevels number of automatically-selected isopycnal levels. Set to 0 to remove isopycnals.
@@ -19,6 +21,7 @@
 #' @author Mikko Vihtakari
 #' @import ggplot2 patchwork 
 #' @importFrom oce swSTrho swRho
+#' @importFrom grDevices colors
 #' @examples # Using example data
 #'
 #' dt <- data.frame(temp = c(1, -1.1, -0.8, 3.2), sal = c(34, 34.5, 34.9, 33.9)) 
@@ -286,7 +289,7 @@ if(scale2color & (!is.null(color_scale) | color == "watertype") & plot_data) {
 ## Finally plotting
 
 if(margin_distr & plot_data) {
-  library(patchwork)
+  #requireNamespace(patchwork)
   p <- p + theme(legend.position = "none")
   px + patchwork::plot_spacer() + p + py + plot_layout(ncol = 2, nrow = 2, heights = c(2,5), widths = c(5,1))
 } else {

@@ -17,7 +17,7 @@ process_cdom_data(data_file, sheet = "all",
 \value{
 Returns a list of class \code{CDOMdata} containing a data frame of spectral absorption coefficients (\code{$spectra}) and a data frame of desired variables (\code{$data}) to be exported to the database. The element \code{data} contains following columns:
 \itemize{
-\item \strong{\code{sample_name}} The standardized sample name that can be linked to \link[=export_metadata]{meta-data}
+\item \strong{\code{sample_name}} The standardized sample name that can be linked to \link[=read_metadata]{meta-data}
 \item \strong{\code{abs254}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 254 nm wavelength
 \item \strong{\code{abs350}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 350 nm wavelength
 \item \strong{\code{abs375}} Absorption coefficient (\eqn{m^{-1}}{m-1}) for 375 nm wavelength

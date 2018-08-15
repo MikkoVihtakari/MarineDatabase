@@ -7,7 +7,7 @@
 convert_sampling_depths(dt, column, comment.col = "comment")
 }
 \arguments{
-\item{dt}{data frame containing meta-data. See \code{\link{export_metadata}}}
+\item{dt}{data frame containing meta-data. See \code{\link{read_metadata}}}
 
 \item{column}{column name in meta-data containing the sampling depths to be converted.}
 

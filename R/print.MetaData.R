@@ -1,11 +1,11 @@
 ##' @title Print \code{MetaData} objects
-##' @description \code{\link{print}} function for \code{\link[=export_metadata]{MetaData}} objects
+##' @description \code{\link{print}} function for \code{\link[=read_metadata]{MetaData}} objects
 ##' @param x \code{MetaData} object to be printed.
 ##' @param ... further arguments passed to \code{\link{print}}.
 ##' @method print MetaData
 ##' @export
 ##' @author Mikko Vihtakari
-##' @seealso \code{\link{export_metadata}}
+##' @seealso \code{\link{read_metadata}}
 
 print.MetaData <- function(x, ...) {
 

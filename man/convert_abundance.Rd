@@ -19,7 +19,7 @@ convert_abundance(data, ab_col, ab_from = NULL, ab_to = NULL,
 
 \item{filtered}{Logical indicating whether the sample was filtered (\code{filtered = TRUE}) or subsampled (\code{filtered = FALSE}). See details.}
 
-\item{type}{Character argument specifying either the gear column (see \code{\link{export_metadata}}) or either of following: "icecore" or "net".}
+\item{type}{Character argument specifying either the gear column (see \code{\link{read_metadata}}) or either of following: "icecore" or "net".}
 
 \item{cf}{Numeric giving the concentration factor connected to the volume difference when transforming water to ice (melted water volume/ice volume). Used only, if \code{type} indicates ice core. To remove the effect, set \code{cf = 1}.}
 
@@ -28,6 +28,8 @@ convert_abundance(data, ab_col, ab_from = NULL, ab_to = NULL,
 \item{start_col}{Character argument specifying the name of the column in \code{data} for the section start for the ice core or plankton net in \strong{meters}.}
 
 \item{end_col}{Character argument specifying the name of the column in \code{data} for the section end for the ice core or plankton net in \strong{meters}.}
+
+\item{unit_col}{Character argument specifying the unit column name in \code{data}.}
 }
 \description{
 Not ready conversion function

@@ -34,7 +34,7 @@ compile_species_data(dat, splist, core_cols = c("expedition", "station",
 
 \item{add_cols}{A character vector containing names of the additional columns that should be included in the output. These columns are not used by the function otherwise. Additional columns cannot contain several unique values due to summarizing process.}
 
-\item{convert_unit}{List or \code{NULL}. Should the function convert supplied abundances using the \code{\link{convert_abundance}} function, a list giving \code{from} and \code{to} units have to be supplied. If conversion should not be made, use \code{NULL} (default). See details for alternatives.}
+\item{convert_unit}{List or \code{NULL}. Should the function convert supplied abundances using the \code{\link[=convert_abundance]{convert_abundance}} function, a list giving \code{from} and \code{to} units have to be supplied. If conversion should not be made, use \code{NULL} (default). See details for alternatives.}
 
 \item{summarise_cores}{Logical. Should core sections be summarized to a continuous core? If \code{TRUE} (default), all sections are summarized, \code{start_col} and \code{end_col} removed from the output, and a \code{$core_type} column added. If \code{FALSE} core sections are returned as they are, but duplicate species names are summed up.}
 
@@ -57,7 +57,7 @@ Implemented \strong{convert_unit} argument alternatives:
   \item \strong{\code{list(from = "per", to = "per")}}: percentage abundances are summed up according to the \code{summarise_cores} argument and scaled to 100 \% (sum for an ice core or a section adds up to 100 \%).
   \item \strong{\code{list(from = "rel", to = "rel")}}: relative abundances are summed up by taking a mean for duplicate species or entire ice cores (if \code{summarise_cores = TRUE}).
   \item \strong{\code{list(from = "rel", to = "per")}}: relative abundances are first summed up and a percentage of their contribution is calculated. Abundances add up to 100 \% for an ice core or a section depending on the \code{summarise_cores} argument.
-  \item \strong{\code{list(from = "1/L", to = "1/m2")}} (or any other variations passed to \code{\link{convert_abundace}}): Individuals per litre values converted to individuals per square metre before summing up abundances (see \code{summarise_cores} argument)
+  \item \strong{\code{list(from = "1/L", to = "1/m2")}} (or any other variations passed to \code{\link[=convert_abundance]{convert_abundace}}): Individuals per litre values converted to individuals per square metre before summing up abundances (see \code{summarise_cores} argument)
   }
 }
 \author{

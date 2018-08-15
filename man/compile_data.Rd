@@ -9,7 +9,7 @@ compile_data(dat, meta, na.rm = TRUE)
 \arguments{
 \item{dat}{A MarineDatabase data object. A data file that has passed through one of the process data functions in the MarineDatabase package, such as \code{\link{process_cdom_data}}.}
 
-\item{meta}{A \code{\link[=export_metadata]{MetaData}} object.}
+\item{meta}{A \code{\link[=read_metadata]{MetaData}} object.}
 
 \item{na.rm}{Logical indicating whether sample names that are missing from meta-data should be removed. Defaults TRUE.}
 }

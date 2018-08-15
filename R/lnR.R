@@ -9,13 +9,13 @@
 #' @param ci.conf the confidence level for the confidence interval. Defaults to 0.95 (95\%).
 #' @param unlog logical indicating whether the output should be unlogged. Defaults to \code{FALSE}. Read the page 1152 under eq. 9 and what follows on the next page from Hedges et al. before you switch this to \code{TRUE} in publications. 
 #' @param sqrt_transform Logical indicating whether values should be square root transformed prior calculation of means. This option makes the distributions more normally distributed, but might change the outcome. Highly experimental. DO NOT USE in publications.  
-#' @param paired_tests Logical indicating whether \link[base]{wilcox.test} should be used to "confirm" the results indicated by the confidence intervals for the response ratios.
+#' @param paired_tests Logical indicating whether \link[stats]{wilcox.test} should be used to "confirm" the results indicated by the confidence intervals for the response ratios.
 #' @param all.data logical indicating whether all data used in calculations should be returned instead of a concise table of relevant results. Defaults to \code{FALSE}.
 #' @param signif number of significant digits in output. Defaults to 2. If \code{'all'} output will not be rounded.
-#' @return Returns a list where \code{$data} element contains the calculated response ratios for each \code{response} in a separate list named by the response's column name. \code{$info} contains information how the response ratios were calculated and, if \code{paired_tests = TRUE}, the \code{$tests} element gives \link[base]{wilcox.test} results to "confirm" significance of the confidence intervals for the response ratios. Nonconforming tests are listed under \code{$nonconforming}.
+#' @return Returns a list where \code{$data} element contains the calculated response ratios for each \code{response} in a separate list named by the response's column name. \code{$info} contains information how the response ratios were calculated and, if \code{paired_tests = TRUE}, the \code{$tests} element gives \link[stats]{wilcox.test} results to "confirm" significance of the confidence intervals for the response ratios. Nonconforming tests are listed under \code{$nonconforming}.
 #' @details The calculations are based on Hedges et al. (1999), with the exception that t-distribution is used to acquire confidence intervals instead of normal distribution. The difference is minimal for sample sizes > 20, but the confidence intervals will be a lot more conservative for small sample sizes leading to fewer false positives. Use \code{ci.type = "z"} to use normal distribution for CI estimation as described in the original source.
 #' 
-#' The square root transformation routine is experimental and little tested, but seems to produce slightly less nonconforming test results against \link[base]{wilcox.test} for non-normal data. 
+#' The square root transformation routine is experimental and little tested, but seems to produce slightly less nonconforming test results against \link[stats]{wilcox.test} for non-normal data. 
 #' 
 #' It is recommended to plot your raw values to confirm any results given by this function.    
 #' @references Hedges, L. V, Gurevitch, J., & Curtis, P.S. (1999) The meta-analysis of response ratios in experimental ecology. Ecology, 80, 1150–1156. 

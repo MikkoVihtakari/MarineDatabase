@@ -20,6 +20,10 @@ ts_plot(dt, temp_col = "temp", sal_col = "sal",
 
 \item{WM}{dataframe containing the water type definitions for polygons boundaries for water types. Set to \code{NULL} to remove the polygon boundaries. See Details in \code{\link{define_water_type}} for further details.}
 
+\item{xlim}{numeric vector specifying th limits for x-axis. If \code{NULL}, the \code{zoom} argument is used.}
+
+\item{ylim}{numeric vector specifying th limits for y-axis. If \code{NULL}, the \code{zoom} argument is used.}
+
 \item{color}{character indicating the mapping variable for color. Either a single character from \code{\link[grDevices]{colors}}, "watertype" or column name in \code{dt}. If \code{"watertype"}, the symbols are colored based on water type using a prededined palette. If the character specifies a valid color, that color is used for the data symbols.}
 
 \item{zoom}{logical indicating whether the x- and y-axis should be limited to data. If \code{FALSE}, the entire water mass diagram from the \code{WM} data frame is shown.}

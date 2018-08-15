@@ -1,6 +1,6 @@
 #' @title Convert sampling depths to numeric.
 #' @description  Converts sampling depths to numeric and adds any character strings from these columns to comments
-#' @param dt data frame containing meta-data. See \code{\link{export_metadata}}
+#' @param dt data frame containing meta-data. See \code{\link{read_metadata}}
 #' @param column column name in meta-data containing the sampling depths to be converted.
 #' @param comment.col the name of the comment column in \code{dt}
 #' @author Mikko Vihtakari

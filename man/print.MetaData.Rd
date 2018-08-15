@@ -12,10 +12,10 @@
 \item{...}{further arguments passed to \code{\link{print}}.}
 }
 \description{
-\code{\link{print}} function for \code{\link[=export_metadata]{MetaData}} objects
+\code{\link{print}} function for \code{\link[=read_metadata]{MetaData}} objects
 }
 \seealso{
-\code{\link{export_metadata}}
+\code{\link{read_metadata}}
 }
 \author{
 Mikko Vihtakari

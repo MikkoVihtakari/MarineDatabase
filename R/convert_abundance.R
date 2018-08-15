@@ -5,11 +5,12 @@
 #' @param ab_from The initial abundance unit. Options: "n" (number of individuals), "nsub" (number of individuals in a subsample), "1/L" (number of individuals per litre), "1/m3" (number of individuals per cubic metre), "1/m2" (number of individuals per square metre).
 #' @param ab_to The desired abundance unit. Options: "1/L" (number of individuals per litre), "1/m3" (number of individuals per cubic metre), "1/m2" (number of individuals per square metre).
 #' @param filtered Logical indicating whether the sample was filtered (\code{filtered = TRUE}) or subsampled (\code{filtered = FALSE}). See details.
-#' @param type Character argument specifying either the gear column (see \code{\link{export_metadata}}) or either of following: "icecore" or "net".
+#' @param type Character argument specifying either the gear column (see \code{\link{read_metadata}}) or either of following: "icecore" or "net".
 #' @param cf Numeric giving the concentration factor connected to the volume difference when transforming water to ice (melted water volume/ice volume). Used only, if \code{type} indicates ice core. To remove the effect, set \code{cf = 1}.
 #' @param vol_col Character argument specifying the volume column to be used in calculations. Should be supplied in \strong{liters}.
 #' @param start_col Character argument specifying the name of the column in \code{data} for the section start for the ice core or plankton net in \strong{meters}.
 #' @param end_col Character argument specifying the name of the column in \code{data} for the section end for the ice core or plankton net in \strong{meters}.
+#' @param unit_col Character argument specifying the unit column name in \code{data}.
 #' @details The function to calculate ind m^-2 values from ind is (ind*cf*1000*h)/V, where ind is number of individuals in a sample, cf the concentration factor, h height of ice-core section in m, and V melted volume in L.
 #' 
 #' The function is not ready and works only for "1/L" to "1/m2" conversions with very limited options. 
