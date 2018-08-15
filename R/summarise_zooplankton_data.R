@@ -23,9 +23,9 @@
 ## Test parameters
 # obj = dt; biomass = FALSE; sp_group = "origin"; meta_group = c("expedition" ,"station", "lon", "lat", "lon.utm", "lat.utm", "date"); meta_group_method = "depth_mean"; remove_noncont = FALSE; warnings = TRUE
 # obj = dt; sp_group = NULL; meta_group = NULL; meta_group_method = "depth_mean"; biomass = TRUE; remove_noncont = FALSE; warnings = TRUE
-# obj = tp; sp_group = NULL; meta_group = c("expedition" , "station", "area", "bottom_depth", "lon", "lat", "lon.utm", "lat.utm", "date");  meta_group_method = "total_sum"; biomass = TRUE; remove_noncont = FALSE; warnings = TRUE
+# obj = tp; sp_group = NULL; meta_group = c("expedition" , "station", "area", "bottom_depth", "lon", "lat", "lon.utm", "lat.utm", "date");  meta_group_method = "total_sum"; biomass = TRUE; remove_noncont = TRUE; warnings = TRUE
 # obj = dt; biomass = TRUE; sp_group = "species"; meta_group = NULL; meta_group_method = "none"; remove_noncont = FALSE; warnings = TRUE
-
+# obj  = 
 
 summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, meta_group_method = "depth_mean", biomass = FALSE, remove_noncont = FALSE, warnings = TRUE) {
 
@@ -98,7 +98,7 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
     dat <- dat %>% group_by(id, sp_id) %>% summarise(value = sum(value, na.rm = TRUE))  
   }
   
-  ## Summarize species data ####
+  ## Summarize species data ###
   
   if(!is.null(meta_group)) {
     
@@ -112,7 +112,7 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
       dat <- dat %>% group_by_(.dots = c(meta_group, "sp_id")) %>% summarise(value = sum(value, na.rm = TRUE))
     } else if(meta_group_method == "total_sum") {
       dat <- merge(meta[c("id", meta_group)], dat, by = "id", all = TRUE, sort = FALSE)
-      dat <- dat %>% group_by_(.dots = meta_group) %>% summarise(value = sum(value, na.rm = TRUE))
+      dat <- dat %>% dplyr::group_by_(.dots = meta_group) %>% dplyr::summarise(value = sum(value, na.rm = TRUE))
     } else if(meta_group_method %in% c("depth_mean", "depth_sum")) {
       
       if(any(meta_group %in% c("from", "to"))) stop("'from' and 'to' should not be included in meta_group for the 'depth_mean'|'depth_sum' method as they are used to calculate depth averaged/summed values")
@@ -156,6 +156,7 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
       stop(meta_group_method, " is not a valid meta_group_method")
     }
     
+    
     if(meta_group_method == "total_sum") {
       meta <- as.data.frame(dat[!names(dat) %in% "value"])
       dat <- as.data.frame(dat["value"])
@@ -175,7 +176,7 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
   }
   
 
-## Final manipulation ####  
+## Final manipulation ####
   
 if(all(c("id", "sp_id", "value") %in% names(dat))) {
   dat <- reshape2::dcast(dat, ... ~ sp_id, value.var = "value") 
@@ -184,7 +185,7 @@ if(all(c("id", "sp_id", "value") %in% names(dat))) {
 }
 
 ## Make sure that the order of meta and dat matches:
-dat <- dat[match(meta$id, rownames(dat)),]
+if(any(meta$id != rownames(dat))) dat <- dat[match(meta$id, rownames(dat)),]
 
   if(any(is.na(dat))) dat[is.na(dat)] <- 0
   if(nrow(meta) != nrow(dat)) stop("nrow between data and meta differ.")
