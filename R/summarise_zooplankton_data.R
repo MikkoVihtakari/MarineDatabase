@@ -22,10 +22,10 @@
 
 ## Test parameters
 # obj = dt; biomass = FALSE; sp_group = "origin"; meta_group = c("expedition" ,"station", "lon", "lat", "lon.utm", "lat.utm", "date"); meta_group_method = "depth_mean"; remove_noncont = FALSE; warnings = TRUE
-# obj = dt; sp_group = NULL; meta_group = NULL; meta_group_method = "depth_mean"; biomass = TRUE; remove_noncont = FALSE; warnings = TRUE
+# obj = dt; sp_group = "species"; meta_group = NULL; meta_group_method = "depth_mean"; biomass = FALSE; remove_noncont = FALSE; warnings = TRUE
 # obj = tp; sp_group = NULL; meta_group = c("expedition" , "station", "area", "bottom_depth", "lon", "lat", "lon.utm", "lat.utm", "date");  meta_group_method = "total_sum"; biomass = TRUE; remove_noncont = TRUE; warnings = TRUE
 # obj = dt; biomass = TRUE; sp_group = "species"; meta_group = NULL; meta_group_method = "none"; remove_noncont = FALSE; warnings = TRUE
-# obj  = 
+# obj  = tmp; biomass = FALSE; sp_group = "group"; meta_group = c("expedition", "station", "area", "season", "bottom_depth", "lon", "lat", "lon.utm", "lat.utm", "date"); meta_group_method = "depth_mean"; remove_noncont = TRUE; warnings = TRUE
 
 summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, meta_group_method = "depth_mean", biomass = FALSE, remove_noncont = FALSE, warnings = TRUE) {
 
@@ -66,15 +66,15 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
     
     if(any(make.names(dat[[sp_group]]) != dat[[sp_group]])) {
       
-      dat$sp_abbr <- make_spabbr(as.character(dat$species))
-      dat$species <- factor(dat$species, levels = unique(dat$species))
+      dat$sp_abbr <- make_spabbr(as.character(dat[[sp_group]]))
+      dat[[sp_group]] <- factor(dat[[sp_group]], levels = unique(dat[[sp_group]]))
       dat$sp_abbr <- factor(dat$sp_abbr, levels = unique(dat$sp_abbr))
       dat$sp_id <- dat$sp_abbr
     
-      tmp <- unique(dat[c("species", "sp_abbr")])
+      tmp <- unique(dat[c(sp_group, "sp_abbr")])
       rownames(tmp) <- 1:nrow(tmp)
     
-      if(any(names(sp) %in% c("origin"))) {
+      if(any(names(sp) %in% c("origin")) & sp_group == "species") {
         tmp <- merge(tmp, unique(sp[c(sp_group, "origin")]), by = sp_group, all.x = TRUE)
       }
       
