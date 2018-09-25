@@ -38,9 +38,9 @@ ts_plot(dt, temp_col = "temp", sal_col = "sal",
 
 \item{symbol_alpha}{numeric value between 0 and 1 defining the transparency of symbols. Set to 1 to remove transparency. See \code{\link[ggplot2]{geom_point}}}
 
-\item{color_scale}{named vector giving all \code{WM$abb} levels (names) and their corresponding colors. See the \code{values} argument in \code{\link[ggplot2]{scale_color_manual}}}
+\item{color_scale}{named vector giving all \code{WM$abb} levels (names) and their corresponding colors. See the \code{values} argument in \code{\link[ggplot2]{scale_colour_manual}}}
 
-\item{color_var_name}{character giving the name that should be used in legend of color scale. See the \code{name} argument in \code{\link[ggplot2]{scale_color_manual}}}
+\item{color_var_name}{character giving the name that should be used in legend of color scale. See the \code{name} argument in \code{\link[ggplot2]{scale_colour_manual}}}
 
 \item{plot_data}{logical indicating whether salinity and temperature data should be plotted. \code{FALSE} returns an empty T-S plot frame allowing further customization using ggplot2 syntax.}
 }

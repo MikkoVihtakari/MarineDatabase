@@ -3,7 +3,7 @@
 #' @param obj \link[=read_zooplankton_data]{ZooplanktonData} object
 #' @param biomass logical indicating whether abundances should be converted to biomass. Requires the \code{biomass_conv} column in \code{obj$splist}. 
 #' @param sp_group character indicating the new names of species matrix names. \strong{Sums up} species names based on the new name. Can be used to collate species to remove stages ("species") or to collate species based on origin ("origin"; Atlantic vs Arctic). Use \code{NULL} if you do not want to change species matrix names.
-#' @param meta_group character vector of column names in \code{$meta}, which should be used to summarize the species data. Typically use c("expedition", "station", "lon", "lat", "lon.utm", "lat.utm", "date") for multinet data to summarize over the entire water column. Use \code{NULL} if you do not want to summarize species data.
+#' @param meta_group character vector of column names in \code{$meta}, which should be used to summarize the species data. Typically use c("expedition", "station", "lon", "lat", "lon.utm", "lat.utm", "date") for multinet data to summarize over the entire water column. Use \code{NULL} if you do not want to summarize species data based on meta data. 
 #' @param meta_group_method character giving the method which should be used to summarize species data. Options: 
 #' \itemize{
 #'   \item \strong{"mean"} takes a simple mean of based on values listed in \code{meta_group} argument.
@@ -26,7 +26,7 @@
 # obj = tp; sp_group = NULL; meta_group = c("expedition" , "station", "area", "bottom_depth", "lon", "lat", "lon.utm", "lat.utm", "date");  meta_group_method = "total_sum"; biomass = TRUE; remove_noncont = TRUE; warnings = TRUE
 # obj = dt; biomass = TRUE; sp_group = "species"; meta_group = NULL; meta_group_method = "none"; remove_noncont = FALSE; warnings = TRUE
 # obj  = tmp; biomass = FALSE; sp_group = "group"; meta_group = c("expedition", "station", "area", "season", "bottom_depth", "lon", "lat", "lon.utm", "lat.utm", "date"); meta_group_method = "depth_mean"; remove_noncont = TRUE; warnings = TRUE
-
+# obj = dt; sp_group = "species"; meta_group = "id"; biomass = FALSE; remove_noncont = TRUE; warnings = TRUE; meta_group_method = "depth_mean"
 summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, meta_group_method = "depth_mean", biomass = FALSE, remove_noncont = FALSE, warnings = TRUE) {
 
   ## Tests ####
@@ -34,6 +34,17 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
   if(class(obj) != "ZooplanktonData") stop("The function requires a ZooplanktonData object")
   if(nrow(obj$data) != nrow(obj$meta)) stop("Invalid ZooplanktonData object: Number of rows in $meta and $data differ.")
   if(any(rownames(obj$data) != obj$meta$id)) stop("Invalid ZooplanktonData object: rownames of $data and the id column in $meta do not match.")
+  
+  if(!is.null(meta_group)) {
+    if(meta_group == "id") {
+      if(!any(duplicated(obj$meta$id))) {
+        stop("Using 'id' as meta_group: All ids in $meta are unique. There is no need to summarize using 'id'. Use meta_group = NULL instead.")
+      } else {
+        stop("$meta entires are not unique (they should be). Something is wrong with the ZooplanktonData object.")
+      }
+    }  
+  }
+  
   
   ## Objects 
   
@@ -117,7 +128,12 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
       
       if(any(meta_group %in% c("from", "to"))) stop("'from' and 'to' should not be included in meta_group for the 'depth_mean'|'depth_sum' method as they are used to calculate depth averaged/summed values")
       
-      dat <- merge(meta[c("id", meta_group, "from", "to")], dat, by = "id", all = TRUE, sort = FALSE)
+      TMP <- meta[c("id", meta_group, "from", "to")]
+      if(any(names(TMP) %in% "id.1")) {
+        TMP <- TMP[!names(TMP) %in% "id.1"]
+      }
+      
+      dat <- base::merge(TMP, dat, by = "id", all = TRUE, sort = FALSE)
       dat$diff <- dat$from - dat$to
       
     if(remove_noncont | warnings) {

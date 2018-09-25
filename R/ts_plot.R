@@ -13,8 +13,8 @@
 #' @param symbol_shape character or numeric. ggplot syntax for shape of plotting symbols. See \code{\link[ggplot2]{geom_point}}
 #' @param symbol_size numeric. ggplot syntax for size of symbol. See \code{\link[ggplot2]{geom_point}}
 #' @param symbol_alpha numeric value between 0 and 1 defining the transparency of symbols. Set to 1 to remove transparency. See \code{\link[ggplot2]{geom_point}}
-#' @param color_scale named vector giving all \code{WM$abb} levels (names) and their corresponding colors. See the \code{values} argument in \code{\link[ggplot2]{scale_color_manual}}
-#' @param color_var_name character giving the name that should be used in legend of color scale. See the \code{name} argument in \code{\link[ggplot2]{scale_color_manual}}
+#' @param color_scale named vector giving all \code{WM$abb} levels (names) and their corresponding colors. See the \code{values} argument in \code{\link[ggplot2]{scale_colour_manual}}
+#' @param color_var_name character giving the name that should be used in legend of color scale. See the \code{name} argument in \code{\link[ggplot2]{scale_colour_manual}}
 #' @param plot_data logical indicating whether salinity and temperature data should be plotted. \code{FALSE} returns an empty T-S plot frame allowing further customization using ggplot2 syntax.
 #' @details The function uses the \href{https://github.com/thomasp85/patchwork}{\strong{patchwork}} package to align marginal distributions (I have not figured any other way to get them aligned correctly, sorry). The package is currently not available in CRAN, but can be downloaded using the \strong{\link[devtools]{devtools}} package (\code{devtools::install_github("thomasp85/patchwork")}). 
 #' @seealso \code{\link{define_water_type}}, the \link{kongsfjord_watermasses} data.frame ,the \link{rijpfjord_watermasses} data.frame
