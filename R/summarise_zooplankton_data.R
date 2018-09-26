@@ -36,7 +36,7 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
   if(any(rownames(obj$data) != obj$meta$id)) stop("Invalid ZooplanktonData object: rownames of $data and the id column in $meta do not match.")
   
   if(!is.null(meta_group)) {
-    if(meta_group == "id") {
+    if(any(meta_group %in% "id")) {
       if(!any(duplicated(obj$meta$id))) {
         stop("Using 'id' as meta_group: All ids in $meta are unique. There is no need to summarize using 'id'. Use meta_group = NULL instead.")
       } else {
