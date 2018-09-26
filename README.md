@@ -10,5 +10,5 @@ Using the [**devtools**](https://cran.r-project.org/web/packages/devtools/index.
 
 ```r
 library(devtools)
-install_github("MikkoVihtakari/MarineDatabase", dependencies = TRUE)
+install_github("MikkoVihtakari/MarineDatabase")
 ```

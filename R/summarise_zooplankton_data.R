@@ -8,7 +8,7 @@
 #' \itemize{
 #'   \item \strong{"mean"} takes a simple mean of based on values listed in \code{meta_group} argument.
 #'   \item \strong{"depth_mean"} takes a depth averaged abundance/biomass using the values listed in \code{meta_group} argument. Requires \code{from} and \code{to} columns in \code{$meta}. The values for each species are multiplied by depth interval, summed up by \code{meta_group} and divided by summed depth interval. The unit is the original unit (n/m3 or weight/m3). 
-#'   \item \strong{"depth_sum"} same than above, but values are not divided by summed depth interval. Represents depth integrated" values. The unit is n/m2 if the original unit was n/m3.
+#'   \item \strong{"depth_sum"} same than above, but values are not divided by summed depth interval. Represents depth "integrated" values. The unit is n/m2 if the original unit was n/m3.
 #'   \item \strong{"sum"} sums up ("integrates") abundances/biomasses for each species by \code{meta_group}
 #'   \item \strong{"total_sum"} ignores species and sums up all abundance/biomass by \code{meta_group}. 
 #' }
