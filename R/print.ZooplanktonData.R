@@ -3,6 +3,7 @@
 ##' @param x \code{ZooplanktonData} object to be printed.
 ##' @param ... further arguments passed to \code{\link{print}}.
 ##' @method print ZooplanktonData
+##' @family ZooplanktonData
 ##' @export
 ##' @author Mikko Vihtakari
 

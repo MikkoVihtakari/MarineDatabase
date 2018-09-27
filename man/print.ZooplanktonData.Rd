@@ -14,6 +14,12 @@
 \description{
 \code{\link{print}} function for \code{\link[=read_zooplankton_data]{ZooplanktonData}} objects
 }
+\seealso{
+Other ZooplanktonData: \code{\link{read_zooplankton_data}},
+  \code{\link{subset.ZooplanktonData}},
+  \code{\link{summarize_zooplankton_data}}
+}
 \author{
 Mikko Vihtakari
 }
+\concept{ZooplanktonData}

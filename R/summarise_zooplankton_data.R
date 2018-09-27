@@ -15,6 +15,7 @@
 #' @param remove_noncont logical indicating whether non-continuous casts should be removed if \code{meta_group_method} = "depth_mean". 
 #' @param warnings logical indicating whether the function should print warnings if it detects problems with data
 #' @return Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).
+#' @family ZooplanktonData
 #' @import dplyr
 #' @export
 #' 

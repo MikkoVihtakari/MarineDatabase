@@ -30,6 +30,7 @@
 #' The function sums up duplicate species entries for each sample. The function attemps to match the species names in \code{data_file} with the accepted ones listed in \code{\link{ZOOPL}}. Sometimes this routine fails and manual fixes are required. 
 #' 
 #' The function is currently relatively unstable and most likely requires manual debugging for each dataset. 
+#' @family ZooplanktonData
 #' @import openxlsx reshape2
 #' @importFrom plyr mapvalues
 #' @author Mikko Vihtakari, Anette Wold

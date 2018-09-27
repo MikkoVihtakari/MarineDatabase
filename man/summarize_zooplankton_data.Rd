@@ -36,3 +36,9 @@ Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames:
 \description{
 Averages \link[=read_zooplankton_data]{ZooplanktonData} objects by grouping varaibles from meta-data (\code{$meta}) or species list (\code{$splist}). Can be used to convert abundances to biomasses, to sum up species abundances to remove stages and to summarize species data over the entire water column or regions.
 }
+\seealso{
+Other ZooplanktonData: \code{\link{print.ZooplanktonData}},
+  \code{\link{read_zooplankton_data}},
+  \code{\link{subset.ZooplanktonData}}
+}
+\concept{ZooplanktonData}
