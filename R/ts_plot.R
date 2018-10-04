@@ -16,6 +16,7 @@
 #' @param color_scale named vector giving all \code{WM$abb} levels (names) and their corresponding colors. See the \code{values} argument in \code{\link[ggplot2]{scale_colour_manual}}
 #' @param color_var_name character giving the name that should be used in legend of color scale. See the \code{name} argument in \code{\link[ggplot2]{scale_colour_manual}}
 #' @param plot_data logical indicating whether salinity and temperature data should be plotted. \code{FALSE} returns an empty T-S plot frame allowing further customization using ggplot2 syntax.
+#' @param base_size Base size parameter for ggplot. See \link[ggplot2]{theme_bw}.
 #' @details The function uses the \href{https://github.com/thomasp85/patchwork}{\strong{patchwork}} package to align marginal distributions (I have not figured any other way to get them aligned correctly, sorry). The package is currently not available in CRAN, but can be downloaded using the \strong{\link[devtools]{devtools}} package (\code{devtools::install_github("thomasp85/patchwork")}). 
 #' @seealso \code{\link{define_water_type}}, the \link{kongsfjord_watermasses} data.frame ,the \link{rijpfjord_watermasses} data.frame
 #' @author Mikko Vihtakari
@@ -51,7 +52,7 @@
 # dt = data.frame(temp = c(1, -1, -0.8), sal = c(34, 34.5, 34.9)); temp_col = "temp"; sal_col = "sal"; WM = kongsfjord_watermasses; xlim = NULL; ylim = NULL; color = "watertype"; zoom = FALSE; margin_distr = FALSE; nlevels = 6; symbol_shape = 1; symbol_size = 3; symbol_alpha = 0.6; plot_data = TRUE; color_scale = NULL
 # dt <- ctd_rijpfjord; temp_col = "theta"; sal_col = "salinity"; WM = rijpfjord_watermasses; xlim = NULL; ylim = NULL; color = "watertype"; zoom = TRUE; margin_distr = FALSE; nlevels = 6; symbol_shape = 1; symbol_size = 3; symbol_alpha = 0.6; color_scale = NULL; color_var_name = NULL; plot_data = TRUE
 
-ts_plot <- function(dt, temp_col = "temp", sal_col = "sal", WM = kongsfjord_watermasses, xlim = NULL, ylim = NULL, color = "watertype", zoom = TRUE, margin_distr = FALSE, nlevels = 6, symbol_shape = 1, symbol_size = 3, symbol_alpha = 0.6, color_scale = NULL, color_var_name = NULL, plot_data = TRUE) {
+ts_plot <- function(dt, temp_col = "temp", sal_col = "sal", WM = kongsfjord_watermasses, xlim = NULL, ylim = NULL, color = "watertype", zoom = TRUE, margin_distr = FALSE, nlevels = 6, symbol_shape = 1, symbol_size = 3, symbol_alpha = 0.6, color_scale = NULL, color_var_name = NULL, plot_data = TRUE, base_size = 10, color_wmpoly = "grey30", color_isopyc = "grey90") {
 
 ## Definitions ####
 
@@ -151,25 +152,23 @@ if(zoom) {
 
 ## Main plot ####
 
-polycol <- "grey30"
-
 ## Water mass polygons
 
 if(!is.null(WM)) {
    p <- ggplot() + 
-    geom_polygon(data = WMpoly, aes(x = x, y = y, group = abb), fill = "white", color = polycol, size = LS(0.5)) + 
-    scale_y_continuous(expression(paste("Potential temperature (", ~degree, "C", ")")), breaks = ybreaks) +
+    geom_polygon(data = WMpoly, aes(x = x, y = y, group = abb), fill = "white", color = color_wmpoly, size = LS(0.5)) + 
+    scale_y_continuous(expression(paste("Potential temperature (", degree, "C", ")", sep = "")), breaks = ybreaks) +
     coord_cartesian(xlim = xlim, ylim = ylim, expand = FALSE) +
-    theme_classic(base_size = 10) + 
+    theme_classic(base_size = base_size) + 
     theme(axis.line = element_line(size = LS(0.5)),
       axis.ticks = element_line(size = LS(0.5)), 
       panel.border = element_rect(color = "black", size = LS(1), fill = NA)) 
   
 } else {
   p <- ggplot() + 
-    scale_y_continuous(expression(paste("Potential temperature (", ~degree, "C", ")")), breaks = ybreaks) +
+    scale_y_continuous(expression(paste("Potential temperature (", degree, "C", ")", sep = "")), breaks = ybreaks) +
     coord_cartesian(xlim = xlim, ylim = ylim, expand = FALSE) +
-    theme_classic(base_size = 10) + 
+    theme_classic(base_size = base_size) + 
     theme(axis.line = element_line(size = LS(0.5)),
       axis.ticks = element_line(size = LS(0.5)), 
       panel.border = element_rect(color = "black", size = LS(1), fill = NA)) 
@@ -181,7 +180,7 @@ if(nlevels > 0) {
   p <- p + 
     scale_x_continuous("Practical salinity", breaks = xbreaks, 
     sec.axis = sec_axis(~., breaks = isopycs[isopycs$temp == ylim[2], "sal"], labels = isopycs[isopycs$temp == ylim[2], "rho"], name = "Density")) + 
-    geom_line(data = isopycs, aes(x = sal, y = temp, group = rho), color = "grey60", size = LS(0.5))
+    geom_line(data = isopycs, aes(x = sal, y = temp, group = rho), color = color_isopyc, size = LS(0.5))
 } else {
   p <- p +
     scale_x_continuous("Practical salinity", breaks = xbreaks)
@@ -202,7 +201,7 @@ if(plot_data) {
 ## Water mass labels
 
 if(!is.null(WM)) {
-  p <- p + geom_text(data = WMtext, aes(x = x, y = y, label = abb), size = FS(8), vjust = 1.2, hjust = -0.3, color = polycol)
+  p <- p + geom_text(data = WMtext, aes(x = x, y = y, label = abb), size = FS(base_size*0.8), vjust = 1.2, hjust = -0.1, color = color_wmpoly)
 }
 
 ######################    
@@ -216,7 +215,7 @@ if(margin_distr & plot_data) {
     px <- ggplot(data = dt, aes_string(x = sal_col, fill = color)) +
     geom_density(alpha = 0.5, size = 0.2) +
     coord_cartesian(xlim = xlim, expand = FALSE) + 
-    theme_classic(base_size = 8) +
+    theme_classic(base_size = base_size) +
     theme(axis.title = element_blank(),
       axis.line = element_blank(),
       axis.ticks = element_blank(),
@@ -227,7 +226,7 @@ if(margin_distr & plot_data) {
     px <- ggplot(data = dt, aes_string(x = sal_col)) +
     geom_density(alpha = 0.5, size = 0.2, fill = color) +
     coord_cartesian(xlim = xlim, expand = FALSE) + 
-    theme_classic(base_size = 8) +
+    theme_classic(base_size = base_size) +
     theme(axis.title = element_blank(),
       axis.line = element_blank(),
       axis.ticks = element_blank(),
@@ -243,7 +242,7 @@ if(margin_distr & plot_data) {
     py <- ggplot(data = dt, aes_string(x = temp_col, fill = color)) +
       geom_density(alpha = 0.5, size = 0.2) +
       coord_flip(xlim = ylim, expand = FALSE) + 
-      theme_classic(base_size = 8) +
+      theme_classic(base_size = base_size) +
       theme(axis.title = element_blank(),
         axis.line = element_blank(),
         axis.ticks = element_blank(),
@@ -253,7 +252,7 @@ if(margin_distr & plot_data) {
     py <- ggplot(data = dt, aes_string(x = temp_col)) +
       geom_density(alpha = 0.5, size = 0.2, fill = color) +
       coord_flip(xlim = ylim, expand = FALSE) + 
-      theme_classic(base_size = 8) +
+      theme_classic(base_size = base_size) +
       theme(axis.title = element_blank(),
         axis.line = element_blank(),
         axis.ticks = element_blank(),

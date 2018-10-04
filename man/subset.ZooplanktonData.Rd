@@ -14,9 +14,9 @@
 
 \item{...}{Arguments passed to the \code{\link[base]{subset}} function.}
 
-\item{remove_zeros}{Logial indicating whether columns/species (if \code{type = "meta"}) or rows/samples (if \code{type = "splist"}) with zero sums should be removed from the dataset.}
+\item{remove_zeros}{Logical indicating whether columns/species (if \code{type = "meta"}) or rows/samples (if \code{type = "splist"}) with zero sums should be removed from the dataset.}
 
-\item{drop_levels}{Logical indicating whether unused levels should be dropped from $meta and $splist data frames. See \code{\link[base]{droplevels}}.}
+\item{drop_levels}{Logical indicating whether unused levels should be dropped from \code{$meta} and \code{$splist} data frames. See \code{\link[base]{droplevels}}.}
 }
 \value{
 Returns a subsetted \link[=read_zooplankton_data]{ZooplanktonData} object.

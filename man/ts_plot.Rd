@@ -9,7 +9,8 @@ ts_plot(dt, temp_col = "temp", sal_col = "sal",
   color = "watertype", zoom = TRUE, margin_distr = FALSE,
   nlevels = 6, symbol_shape = 1, symbol_size = 3,
   symbol_alpha = 0.6, color_scale = NULL, color_var_name = NULL,
-  plot_data = TRUE)
+  plot_data = TRUE, base_size = 10, color_wmpoly = "grey30",
+  color_isopyc = "grey90")
 }
 \arguments{
 \item{dt}{data frame.}
@@ -43,6 +44,8 @@ ts_plot(dt, temp_col = "temp", sal_col = "sal",
 \item{color_var_name}{character giving the name that should be used in legend of color scale. See the \code{name} argument in \code{\link[ggplot2]{scale_colour_manual}}}
 
 \item{plot_data}{logical indicating whether salinity and temperature data should be plotted. \code{FALSE} returns an empty T-S plot frame allowing further customization using ggplot2 syntax.}
+
+\item{base_size}{Base size parameter for ggplot. See \link[ggplot2]{theme_bw}.}
 }
 \description{
 Makes a T-S plot from salinity and temperature data. Optimized for Kongsfjorden.
