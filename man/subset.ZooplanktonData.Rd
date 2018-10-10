@@ -28,7 +28,8 @@ Generic subset method for ZooplanktonData objects. Returns a subset of a Zooplan
 See the the \code{\link[base]{subset}} function for details.
 }
 \seealso{
-Other ZooplanktonData: \code{\link{print.ZooplanktonData}},
+Other ZooplanktonData: \code{\link{merge_zooplankton_data}},
+  \code{\link{print.ZooplanktonData}},
   \code{\link{read_zooplankton_data}},
   \code{\link{summarize_zooplankton_data}}
 }

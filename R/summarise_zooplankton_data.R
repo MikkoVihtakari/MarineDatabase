@@ -3,7 +3,7 @@
 #' @param obj \link[=read_zooplankton_data]{ZooplanktonData} object
 #' @param biomass logical indicating whether abundances should be converted to biomass. Requires the \code{biomass_conv} column in \code{obj$splist}. 
 #' @param sp_group character indicating the new names of species matrix names. \strong{Sums up} species names based on the new name. Can be used to collate species to remove stages ("species") or to collate species based on origin ("origin"; Atlantic vs Arctic). Use \code{NULL} if you do not want to change species matrix names.
-#' @param meta_group character vector of column names in \code{$meta}, which should be used to summarize the species data. Typically use c("expedition", "station", "lon", "lat", "lon.utm", "lat.utm", "date") for multinet data to summarize over the entire water column. Use \code{NULL} if you do not want to summarize species data based on meta data. 
+#' @param meta_group character vector of column names in \code{$meta}, which should be used to summarize the species data. Typically use c("expedition", "station", "lon", "lat", "date") for multinet data to summarize over the entire water column. Use \code{NULL} if you do not want to summarize species data based on meta data. 
 #' @param meta_group_method character giving the method which should be used to summarize species data. Options: 
 #' \itemize{
 #'   \item \strong{"mean"} takes a simple mean of based on values listed in \code{meta_group} argument.

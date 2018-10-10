@@ -3,6 +3,7 @@
 #' @param x \link[=read_zooplankton_data]{ZooplanktonData} object
 #' @param y \link[=read_zooplankton_data]{ZooplanktonData} object
 #' @seealso \code{\link{read_zooplankton_data}}
+#' @family ZooplanktonData
 #' @author Mikko Vihtakari
 #' @export
 

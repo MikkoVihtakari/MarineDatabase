@@ -13,7 +13,7 @@ summarize_zooplankton_data(obj, sp_group = NULL, meta_group = NULL,
 
 \item{sp_group}{character indicating the new names of species matrix names. \strong{Sums up} species names based on the new name. Can be used to collate species to remove stages ("species") or to collate species based on origin ("origin"; Atlantic vs Arctic). Use \code{NULL} if you do not want to change species matrix names.}
 
-\item{meta_group}{character vector of column names in \code{$meta}, which should be used to summarize the species data. Typically use c("expedition", "station", "lon", "lat", "lon.utm", "lat.utm", "date") for multinet data to summarize over the entire water column. Use \code{NULL} if you do not want to summarize species data based on meta data.}
+\item{meta_group}{character vector of column names in \code{$meta}, which should be used to summarize the species data. Typically use c("expedition", "station", "lon", "lat", "date") for multinet data to summarize over the entire water column. Use \code{NULL} if you do not want to summarize species data based on meta data.}
 
 \item{meta_group_method}{character giving the method which should be used to summarize species data. Options: 
 \itemize{
@@ -37,7 +37,8 @@ Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames:
 Averages \link[=read_zooplankton_data]{ZooplanktonData} objects by grouping varaibles from meta-data (\code{$meta}) or species list (\code{$splist}). Can be used to convert abundances to biomasses, to sum up species abundances to remove stages and to summarize species data over the entire water column or regions.
 }
 \seealso{
-Other ZooplanktonData: \code{\link{print.ZooplanktonData}},
+Other ZooplanktonData: \code{\link{merge_zooplankton_data}},
+  \code{\link{print.ZooplanktonData}},
   \code{\link{read_zooplankton_data}},
   \code{\link{subset.ZooplanktonData}}
 }

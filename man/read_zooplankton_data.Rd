@@ -65,7 +65,8 @@ The function sums up duplicate species entries for each sample. The function att
 The function is currently relatively unstable and most likely requires manual debugging for each dataset.
 }
 \seealso{
-Other ZooplanktonData: \code{\link{print.ZooplanktonData}},
+Other ZooplanktonData: \code{\link{merge_zooplankton_data}},
+  \code{\link{print.ZooplanktonData}},
   \code{\link{subset.ZooplanktonData}},
   \code{\link{summarize_zooplankton_data}}
 }

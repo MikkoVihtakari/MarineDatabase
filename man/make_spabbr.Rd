@@ -4,10 +4,12 @@
 \alias{make_spabbr}
 \title{Make species abbreviations from latin species names}
 \usage{
-make_spabbr(x)
+make_spabbr(x, id = TRUE)
 }
 \arguments{
 \item{x}{character vector containing latin species names to be abbreviated. Taxonomic levels must be separated by whitespace.}
+
+\item{id}{logical indicating whether the abbreviation should be a computer ID (\code{TRUE}) or scientific abbreviation (\code{FALSE})}
 }
 \value{
 Returns a character vector containing species abbreviations. The abbreviations should be valid data.frame column names. Check the uniquety of the returned names (that is not checked by the function).

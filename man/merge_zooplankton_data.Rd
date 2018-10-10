@@ -16,7 +16,13 @@ Merges two \link[=read_zooplankton_data]{ZooplanktonData} objects
 }
 \seealso{
 \code{\link{read_zooplankton_data}}
+
+Other ZooplanktonData: \code{\link{print.ZooplanktonData}},
+  \code{\link{read_zooplankton_data}},
+  \code{\link{subset.ZooplanktonData}},
+  \code{\link{summarize_zooplankton_data}}
 }
 \author{
 Mikko Vihtakari
 }
+\concept{ZooplanktonData}
