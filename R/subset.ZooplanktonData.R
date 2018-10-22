@@ -58,7 +58,7 @@ subset.ZooplanktonData <- function(x, type, ..., remove_zeros = FALSE, drop_leve
     if(remove_zeros) {
       
     removed.ids <- rownames(new.data)[rowSums(new.data) == 0]
-    new.data <- new.data[!rownames(new.data) %in% removed.ids,]
+    new.data <- subset(new.data, !rownames(new.data) %in% removed.ids)
     new.meta <- x$meta[!x$meta$id %in% removed.ids,]
     
     message(length(removed.ids), " samples have been removed from the dataset since their rowSum was 0.")

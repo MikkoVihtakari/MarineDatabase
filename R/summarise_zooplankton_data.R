@@ -86,8 +86,8 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
       tmp <- unique(dat[c(sp_group, "sp_abbr")])
       rownames(tmp) <- 1:nrow(tmp)
     
-      if(any(names(sp) %in% c("origin")) & sp_group == "species") {
-        tmp <- merge(tmp, unique(sp[c(sp_group, "origin")]), by = sp_group, all.x = TRUE)
+      if(any(names(sp) %in% names(sp)[!names(sp) %in% c("species", "stage", "size_op", "length", "id", "biomass_conv")]) & sp_group == "species") {
+        tmp <- merge(tmp, unique(sp[c(sp_group, names(sp)[!names(sp) %in% c("species", "stage", "size_op", "length", "id", "biomass_conv")])]), by = sp_group, all.x = TRUE)
       }
       
       if(any(duplicated(tmp$sp_abbr))) stop("duplicated names in species list as a result of grouping.")
