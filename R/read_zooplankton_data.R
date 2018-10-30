@@ -40,7 +40,9 @@
 # data_file = "../../../Rijpfjorden Carbon Bridge/Data/Zooplankton/zoopl_rjipfj_2010_2013_ind_m3.xlsx"; sheet = "ALL_to_R"; dataStart = 11; dataEnd = 1000; dataCols = NULL; control_stations = FALSE; output_format = "as.Date"; add_coordinates = FALSE; control_species = list(species = "species", stage = "stage", size_op = "size_op", length = "length"); species_info_cols = NULL; lookup_cols = NULL; remove_missing = TRUE
 # data_file = "Data/Kongsfjorden_zooplankton_allyears.xlsx"; sheet = "ALL ind m3"; dataStart = 11; dataEnd = 266; control_stations = TRUE; output_format = "as.Date"; add_coordinates = TRUE; dataCols = NULL; control_species = list(species = "species", stage = "stage", length = "length"); species_info_cols = c("group", "species", "stage", "length"); lookup_cols = NULL; remove_missing = TRUE
 # data_file = "Data/Kongsfjord_zooplankton_2005.xlsx"; sheet = "Arkusz1"; dataStart = 11; dataEnd = 1000; control_stations = TRUE; output_format = "as.Date"; species_info_cols = c("species", "stage", "length"); lookup_cols = c("size_group", "origin", "biomass_conv"); add_coordinates = TRUE; control_species = list(species = "species", stage = "stage", length = "length"); dataCols = NULL
-
+# data_file = "Data/Kongsfjorden_zooplankton_allyears_new.xlsx"; sheet = "ALL ind m3"
+# data_file = "Data/mesozooplankton NEW OCT 2018/mosj_2011.xlsx"; sheet = "TO USE"; 
+# dataStart = NULL; dataEnd = 1000; dataCols = NULL; output_format = "as.Date"; control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"); lookup_cols = "biomass_conv"; species_info_cols = NULL; remove_missing = TRUE; control_stations = FALSE; add_coordinates = FALSE; control_sample_names = TRUE; round2ceiling = FALSE
 
 read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEnd = 1000, dataCols = NULL, output_format = "as.Date", control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"), lookup_cols = "biomass_conv", species_info_cols = NULL, remove_missing = TRUE, control_stations = FALSE, add_coordinates = FALSE, control_sample_names = TRUE, round2ceiling = FALSE) {
 
@@ -172,11 +174,16 @@ row.names(meta) <- 1:nrow(meta)
 ####################
 ## Species list ####
 
-if(is.null(species_info_cols)) species_info_cols <- unname(unlist(control_species))
+if(is.null(species_info_cols)) {
+  species_info_cols <- unname(unlist(control_species))
+  sp_info_cols <- FALSE
+} else {
+  sp_info_cols <- TRUE
+}
   
 sp <- dt[species_info_cols]
 
-if(is.null(species_info_cols)) names(sp) <- names(unlist(control_species))
+if(!sp_info_cols) names(sp) <- names(unlist(control_species))
 
 if(is.list(control_species)) {
 ## ###  
@@ -189,24 +196,45 @@ if(is.list(control_species)) {
   sp$species <- trimws(sp$species)
   
   ## Typical typos
-  sp$species[sp$species == "Triconia (=Oncaea) borealis"] <- "Triconia borealis"
-  sp$species[sp$species == "Jashnovia brevis"] <- "Jaschnovia brevis"
-  sp$species[sp$species == "Hyperiidea"] <- "Hyperiidae"
-  sp$species[sp$species == "Isopoda Bopyridae"] <- "Bopyridae"
+  if(any(sp$species %in% (tmp_sp <- "Triconia (=Oncaea) borealis"))) {
+    sp$species[sp$species == tmp_sp] <- "Triconia borealis"
+  }
+  
+  if(any(sp$species %in% (tmp_sp <- "Jashnovia brevis"))) {
+    sp$species[sp$species == tmp_sp] <- "Jaschnovia brevis"
+  }
+  
+  if(any(sp$species %in% (tmp_sp <- "Hyperiidea"))) {
+    sp$species[sp$species == tmp_sp] <- "Hyperiidae"
+  }
+  
+  if(any(sp$species %in% (tmp_sp <- "Isopoda Bopyridae"))) {
+    sp$species[sp$species == tmp_sp] <- "Bopyridae"
+  }
   
   sp[sp$species == "Calanoida nauplii", c("species", "stage")] <- c("Calanoida", "nauplii")
   sp[sp$species == "Nemertea pilidium", c("species", "stage")] <- c("Nemertea", "pilidium")
+  
+  sp[sp$species == "Appendicularia" & sp$stage == "larvae", "stage"] <- NA
+  sp[sp$species == "Enteropneusta" & is.na(sp$stage), "stage"] <- "larvae"
   
   ## Id to sort columns
   sp$idno <- 1:nrow(sp)
   
   ## Correct the old names to accepted ones 
-  # k <- sp$species[157]
+  # k <- sp$species[149]
   sp$species <- sapply(sp$species, function(k) {
     if(k %in% ZOOPL$species) {
       k
-    } else if(k %in% ZOOPL$old_names) {
-      unique(ZOOPL[ZOOPL$old_names %in% k, "species"])
+    } else if(k %in% unique(trimws(as.character(na.omit(unlist(strsplit(ZOOPL$old_names, ";"))))))) {
+      
+      tmp <- lapply(strsplit(ZOOPL$old_names, ";"), function(j) {
+        any(trimws(j) == k)
+      })
+      
+      tmp <- which(unlist(tmp))[1]
+      
+      unique(ZOOPL[tmp, "species"])
     } else {
       k
     }
@@ -222,6 +250,11 @@ if(is.list(control_species)) {
   sp$stage[sp$stage == "larvae metatrochophora" & !is.na(sp$stage)] <- "metatrochophora"
   sp$stage[sp$stage == "larvae mitraria" & !is.na(sp$stage)] <- "mitraria"
   sp$stage[sp$stage == "parasitic nauplii" & !is.na(sp$stage)] <- "nauplii"
+  sp$stage[sp$stage == "medusae indet." & !is.na(sp$stage)] <- "medusae"
+  sp$stage[sp$stage == "medusae larvae" & !is.na(sp$stage)] <- "larvae"
+  sp$stage[sp$stage == "adults" & !is.na(sp$stage)] <- "adult"
+  sp$stage[sp$stage == "larvae tornaria" & !is.na(sp$stage)] <- "larvae"
+  sp$stage[sp$stage == "juveniles" & !is.na(sp$stage)] <- "juvenile"
   sp$stage <- trimws(sp$stage)
   
   ## Merge with ZOOPL
@@ -311,7 +344,6 @@ if(any(duplicated(sp$id))) {
   dup_sps <- sp[duplicated(sp$id),"id"]
 }
 
-
 rownames(sp) <- 1:nrow(sp)
 
 ##############
@@ -361,8 +393,11 @@ if(duplicate_sp) {
  
   newdat <- dat
   newdat$id <- rownames(dat)
+  names(newdat) <- make.names(names(newdat), unique = TRUE)
   
   newdat <- reshape2::melt(newdat, id = "id")
+  levels(newdat$variable) <- gsub("\\..+$", "", levels(newdat$variable))
+  
   newdat <- dcast(newdat, id ~ variable, sum)
   rownames(newdat) <- newdat$id
   newdat <- newdat[!names(newdat) %in% "id"]
@@ -381,10 +416,12 @@ if(duplicate_sp) {
 ### Remove missing species ####
 
 if(remove_missing) {
-  missing_sps <- names(dat)[colSums(dat, na.rm = TRUE) == 0]
-  dat <- dat[!names(dat) %in% missing_sps]
   
-  sp <- sp[!sp$id %in% missing_sps,]
+  missing_sps <- names(dat)[colSums(dat, na.rm = TRUE) == 0]
+  
+  dat <- dat[colSums(dat, na.rm = TRUE) > 0]
+  
+  sp <- sp[sp$id %in% names(dat),]
   rownames(sp) <- 1:nrow(sp)
   
   message(length(missing_sps), " species entries have been removed from the dataset since their colSum was 0.")

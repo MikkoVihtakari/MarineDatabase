@@ -7,7 +7,7 @@
 #' @author Mikko Vihtakari
 #' @export
 
-# x = dt1; y = dt2
+# x = dt1; y = dt2011
 merge_zooplankton_data <- function(x, y) {
   
   if(!all(c(class(x), class(y)) == "ZooplanktonData")) stop("x and y have to be ZooplanktonData objects. See ?read_zooplankton_data")
@@ -25,13 +25,17 @@ merge_zooplankton_data <- function(x, y) {
   
   ## Species list ####
   
-  xsp <- x$splist
-  # xsp <- xsp[order(xsp$id),]
-  # rownames(xsp) <- 1:nrow(xsp)
-  ysp <- y$splist
+  xsp <- x$splist[!names(x$splist) %in% c("size_op", "length")]
+  ysp <- y$splist[!names(y$splist) %in% c("size_op", "length")]
   
-  sp <- merge(x$splist, y$splist, all = TRUE, sort = TRUE)
+  sp <- merge(xsp, ysp, all = TRUE, sort = TRUE)
   sp <- sp[order(sp$id),]
+  
+  tmp <- ZOOPL[c("species_ID", "length")]
+  names(tmp)[names(tmp) == "species_ID"] <- "id"
+  
+  sp <- merge(sp, tmp, by = "id", all.x = TRUE, sort = FALSE)
+  
   rownames(sp) <- 1:nrow(sp)
   
   # test_equality(sp, xsp)
@@ -62,7 +66,7 @@ merge_zooplankton_data <- function(x, y) {
   dat <- dat[names(dat) != "id"]
   
   
-  if(nrow(sp) != ncol(dat)) stop("Number of species list rows and data does not match. No idea why this happens. Try debugging the function section by section.")
+  if(nrow(sp) != ncol(dat)) stop("Number of species list rows and data does not match most likely because of differing values in splists for x and y.")
 
   ## Compile ####
   
