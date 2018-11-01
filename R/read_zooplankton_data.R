@@ -13,7 +13,7 @@
 #' @param lookup_cols Character vector specifying the names of columns from the zooplankton lookup list (\code{\link{ZOOPL}}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}. 
 #' @param remove_missing Logical indicating whether species with column sums of 0 should be removed from the output.
 #' @param control_sample_names Logical indicating whether non-standard symbols in sample names should be replaced by standardized equivalents. May fix problems when trying to merge zooplankton samples with meta data from another file. These names tend to have typos. 
-#' @param round2ceiling Logical indicating whether decimals should be rounded to ceiling integers: some Polish data come rounded this way and combining data may require standardizing all values to ceiling integers.  
+#' @param round2ceiling Logical indicating whether decimals should be rounded to ceiling integers: some Polish data come rounded this way. It is recommended to ask for nonrounded values as using this parameter may lead to very large biases in biomass estimates of deep samples. This argument is included only for making testing the impact of rounding easier.   
 #' @return Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).
 #' @details Zooplankton taxonomy data from IOPAN are received in (more or less) standard format on MS Excel sheets. This function attempts to read that format and enable passing data to futher manipulation in R. The structure of the Excel sheet is explained in Figure 1. 
 #' 
@@ -382,7 +382,7 @@ if(round2ceiling) {
     all(x %% 1 == 0)
   })
   
-  if(any(tmp)) warning("Some of the samples appear to be rounded to closest integer (probably ceiling). Consider round2ceiling = TRUE to standardize the numbers. Alternatively fix the precision.")
+  if(any(tmp)) warning("Some of the samples appear to be rounded to closest integer (probably ceiling). This is typical for some IOPAS files. Ask nonrounded values from Slawek.")
   
 }
 

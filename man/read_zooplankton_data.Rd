@@ -39,7 +39,7 @@ read_zooplankton_data(data_file, sheet = 1, dataStart = NULL,
 
 \item{control_sample_names}{Logical indicating whether non-standard symbols in sample names should be replaced by standardized equivalents. May fix problems when trying to merge zooplankton samples with meta data from another file. These names tend to have typos.}
 
-\item{round2ceiling}{Logical indicating whether decimals should be rounded to ceiling integers: some Polish data come rounded this way and combining data may require standardizing all values to ceiling integers.}
+\item{round2ceiling}{Logical indicating whether decimals should be rounded to ceiling integers: some Polish data come rounded this way. It is recommended to ask for nonrounded values as using this parameter may lead to very large biases in biomass estimates of deep samples. This argument is included only for making testing the impact of rounding easier.}
 }
 \value{
 Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).

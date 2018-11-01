@@ -29,7 +29,7 @@
 # obj  = tmp; biomass = FALSE; sp_group = "group"; meta_group = c("expedition", "station", "area", "season", "bottom_depth", "lon", "lat", "lon.utm", "lat.utm", "date"); meta_group_method = "depth_mean"; remove_noncont = TRUE; warnings = TRUE
 # obj = dt; sp_group = "species"; meta_group = "id"; biomass = FALSE; remove_noncont = TRUE; warnings = TRUE; meta_group_method = "depth_mean"
 # obj = dt; sp_group = "species"; meta_group = NULL; meta_group_method = "depth_mean"; biomass = FALSE; remove_noncont = TRUE; warnings = TRUE
-
+# obj = dt; sp_group = "species"; meta_group = NULL; meta_group_method = "depth_mean"; biomass = TRUE; remove_noncont = TRUE; warnings = TRUE
 summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, meta_group_method = "depth_mean", biomass = FALSE, remove_noncont = FALSE, warnings = TRUE) {
 
   ## Tests ####
@@ -62,14 +62,14 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
 
   if(biomass) {
  
-    if(is.null(sp$biomass_conv)) stop("Biomass conversion requires biomass_conv column in $splist. Run read_zooplankton_data again with lookup_cols = 'biomass_conv'")
+    if(is.null(sp$biomass_conv)) stop("Biomass conversion requires biomass_conv column in $splist. Run read_zooplankton_data again with lookup_cols = 'biomass_conv' (default, but maybe you have changed something?)")
    
     dat <- merge(dat, sp[c("id", "biomass_conv")], by.x = "sp_id", by.y = "id", all.x = TRUE, sort = FALSE)
     dat$value <- dat$value * dat$biomass_conv
     dat <- dat[c("id", "sp_id", "value")]
   }
   
-  ## Collate species
+  ## Collate species ####
   
   if(!is.null(sp_group)) {
     
@@ -115,7 +115,7 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
   
   if(!is.null(meta_group)) {
     
-    if(any(!meta_group %in% names(meta))) stop("All meta_group match the column names in $meta")
+    if(any(!meta_group %in% names(meta))) stop(paste(meta_group[!meta_group %in% names(meta)], collapse=", "), " not found from obj$meta")
   
     if(meta_group_method == "mean") {
       dat <- merge(meta[c("id", meta_group)], dat, by = "id", all = TRUE, sort = FALSE)
