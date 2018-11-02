@@ -38,7 +38,7 @@
 
 # Test parameters
 # data_file = "../../../Rijpfjorden Carbon Bridge/Data/Zooplankton/zoopl_rjipfj_2010_2013_ind_m3.xlsx"; sheet = "ALL_to_R"; dataStart = 11; dataEnd = 1000; dataCols = NULL; control_stations = FALSE; output_format = "as.Date"; add_coordinates = FALSE; control_species = list(species = "species", stage = "stage", size_op = "size_op", length = "length"); species_info_cols = NULL; lookup_cols = NULL; remove_missing = TRUE
-# data_file = "Data/Kongsfjorden_zooplankton_allyears.xlsx"; sheet = "ALL ind m3"; dataStart = 11; dataEnd = 266; control_stations = TRUE; output_format = "as.Date"; add_coordinates = TRUE; dataCols = NULL; control_species = list(species = "species", stage = "stage", length = "length"); species_info_cols = c("group", "species", "stage", "length"); lookup_cols = NULL; remove_missing = TRUE
+# data_file = "Data/Kongsfjorden_zooplankton_allyears_new.xlsx"; sheet = "ALL ind m3"; dataStart = NULL; dataEnd = 1000; dataCols = NULL; output_format = "as.Date"; control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"); lookup_cols = "biomass_conv"; species_info_cols = NULL; remove_missing = TRUE; control_stations = TRUE; add_coordinates = TRUE; control_sample_names = TRUE; round2ceiling = FALSE
 # data_file = "Data/Kongsfjord_zooplankton_2005.xlsx"; sheet = "Arkusz1"; dataStart = 11; dataEnd = 1000; control_stations = TRUE; output_format = "as.Date"; species_info_cols = c("species", "stage", "length"); lookup_cols = c("size_group", "origin", "biomass_conv"); add_coordinates = TRUE; control_species = list(species = "species", stage = "stage", length = "length"); dataCols = NULL
 # data_file = "Data/Kongsfjorden_zooplankton_allyears_new.xlsx"; sheet = "ALL ind m3"
 # data_file = "Data/mesozooplankton NEW OCT 2018/mosj_2011.xlsx"; sheet = "TO USE"; 
@@ -374,6 +374,7 @@ dat[is.na(dat)] <- 0
 
 if(round2ceiling) {
   dat <- as.data.frame(apply(dat, 2, ceiling))
+  warning("Rounding all abundances to ceiling. This can cause up to 3000% bias for deep stations. Do not use round2ceiling = TRUE for real data.")
 } else {
   
   tmp <- sapply(1:nrow(dat), function(i) {
@@ -382,7 +383,7 @@ if(round2ceiling) {
     all(x %% 1 == 0)
   })
   
-  if(any(tmp)) warning("Some of the samples appear to be rounded to closest integer (probably ceiling). This is typical for some IOPAS files. Ask nonrounded values from Slawek.")
+  if(any(tmp)) warning(warn_vec(rownames(dat)[tmp]), " samples appear to be rounded to closest integer (probably ceiling). This is typical for some IOPAS files. Ask nonrounded values from Slawek.")
   
 }
 

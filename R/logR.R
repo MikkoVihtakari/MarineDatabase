@@ -1,11 +1,12 @@
 #' @title Calculate logarithmic response ratio from a long table
-#' @description Calculate logarithmic response ratio from a long table where each row is represents one measurement
+#' @description Calculates logarithmic response ratio from a long table where each row is represents one measurement.
 #' @param X data frame
 #' @param response character vector specifying the names of the columns for which the response ratio should be calculated.
 #' @param levels Name of the column that contains factor which should be used to separate response ratios.  
 #' @param groups character vector specifying the names of the columns, which should used as grouping factors. 
 #' @param control the name of the control/base factor level in \code{levels} column. 
-#' @param ci.type indicates the distribution to be used for confidence intervals. \code{'z'} refers to normal distribution and \code{'t'} to t distribution. The default (\code{NULL}) is to decide the distribution based on the lowest sqrt(n)*mean(response)/sd(response) (from Hedges et al.). If over 10\% of values are less than 3, t-distribution is used. Otherwise normal.
+#' @param ci.type indicates the distribution to be used for confidence intervals. \code{'z'} refers to normal distribution and \code{'t'} to t distribution. The default (\code{NULL}) is to decide the distribution based on the lowest \eqn{\sqrt(n)*mean(response)/sd(response)}{sqrt(n)*mean(response)/sd(response)} (from Hedges et al.). If over 10\% of values are less than 3, t-distribution is used. Otherwise normal.
+#' @param base either "e" (default), 2 or 10 defining the base for the log response ratio. While "e" (i.e. \code{ln}) is the most used variant (see Hedges et al. 1999), 2 and 10 based logarithms are easier to read. Experimental. Do not use.
 #' @param ci.conf the confidence level for the confidence interval. Defaults to 0.95 (95\%).
 #' @param unlog logical indicating whether the output should be unlogged. Defaults to \code{FALSE}. Read the page 1152 under eq. 9 and what follows on the next page from Hedges et al. before you switch this to \code{TRUE} in publications. 
 #' @param sqrt_transform Logical indicating whether values should be square root transformed prior calculation of means. This option makes the distributions more normally distributed, but might change the outcome. Highly experimental. DO NOT USE in publications.  
@@ -15,10 +16,14 @@
 #' @return Returns a list where \code{$data} element contains the calculated response ratios for each \code{response} in a separate list named by the response's column name. \code{$info} contains information how the response ratios were calculated and, if \code{paired_tests = TRUE}, the \code{$tests} element gives \link[stats]{wilcox.test} results to "confirm" significance of the confidence intervals for the response ratios. Nonconforming tests are listed under \code{$nonconforming}.
 #' @details The calculations are based on Hedges et al. (1999), with the exception that t-distribution is used to acquire confidence intervals instead of normal distribution. The difference is minimal for sample sizes > 20, but the confidence intervals will be a lot more conservative for small sample sizes leading to fewer false positives. Use \code{ci.type = "z"} to use normal distribution for CI estimation as described in the original source.
 #' 
+#' \strong{Note} that the function does not currently calculate dependent sample response ratios, as the pooled variance needs to be penalized by the correlation term for such analyses. See Lajeunesse (2011) and \href{https://stats.stackexchange.com/questions/141443/calculating-effect-size-lnr-variances-for-studies-with-different-study-designs}{CrossValidated} for further information.
+#' 
 #' The square root transformation routine is experimental and little tested, but seems to produce slightly less nonconforming test results against \link[stats]{wilcox.test} for non-normal data. 
 #' 
 #' It is recommended to plot your raw values to confirm any results given by this function.    
 #' @references Hedges, L. V, Gurevitch, J., & Curtis, P.S. (1999) The meta-analysis of response ratios in experimental ecology. Ecology, 80, 1150–1156. 
+#' 
+#' Lajeunesse, M. J. (2011). On the meta-analysis of response ratios for studies with correlated and multi-group designs. Ecology, 92, 2049-2055.
 #' @import reshape2 broom
 #' @author Mikko Vihtakari
 #' @export
@@ -31,37 +36,42 @@
 # X = env; response = c("temp", "sal", "ice"); levels = "ytemp"; groups = c("region"); control = "cold"
 
 
-lnR <- function(X, response, levels, groups, control, ci.type = NULL, ci.conf = 0.95, paired_tests = FALSE, unlog = FALSE, all.data = FALSE, signif = 2, sqrt_transform = FALSE) {
+logR <- function(X, response, levels, groups, control, ci.type = NULL, ci.conf = 0.95, base = "e", paired_tests = FALSE, unlog = FALSE, all.data = FALSE, signif = 2, sqrt_transform = FALSE) {
 
-
-if(!exists("control", mode = "character")) stop("control must be defined")
-if(!exists("response", mode = "character")) stop("response must be defined")
-if(!exists("levels", mode = "character")) stop("levels must be defined")
-if(!exists("groups", mode = "character")) stop("groups must be defined")
-
-if(!all(apply(X[response], 2, is.numeric))) stop("all response variables are not numeric")
-
-if(length(levels) > 1) stop("length of levels must be 1")
-if(!class(X[[levels]]) %in% c("factor", "ordered")) X[[levels]] <- factor(X[[levels]])
+## Tests
+  if(!base %in% c("e", 2, 10)) stop("base has to be 'e', 2 or 10")
+  if(!exists("control", mode = "character")) stop("control must be defined")
+  if(!exists("response", mode = "character")) stop("response must be defined")
+  if(!exists("levels", mode = "character")) stop("levels must be defined")
+  if(!exists("groups", mode = "character")) stop("groups must be defined")
+  if(!all(apply(X[response], 2, is.numeric))) stop("all response variables are not numeric")
+  if(length(levels) > 1) stop("length of levels must be 1")
+  if(!class(X[[levels]]) %in% c("factor", "ordered")) X[[levels]] <- factor(X[[levels]])
   
-treat.levs <- levels(X[,levels])[!levels(X[,levels]) %in% control]
-ids <- c(groups, levels)
-gids <- c(groups)
+## Conditionals
+  if(base == "e") base <- exp(1)
 
-tmp <- X[c(ids, response)]
+## Data manipulation
+  treat.levs <- levels(X[,levels])[!levels(X[,levels]) %in% control]
+  ids <- c(groups, levels)
+  gids <- c(groups)
+    
+  tmp <- X[c(ids, response)]
+    
+  if(sqrt_transform) {
+    tmp[response] <- lapply(response, function(j) sqrt(tmp[[j]]))
+  }
+    
+  tmp <- lapply(seq_along(response), function(i) {
+    tmp[c(ids, response[i])]
+  })
+    
+  names(tmp) <- response
+    
+  tmp <- lapply(tmp, function(x) reshape2::melt(x, id = ids, variable.name = "VAR"))
 
-if(sqrt_transform) {
-tmp[response] <- lapply(response, function(j) sqrt(tmp[[j]]))
-}
-
-tmp <- lapply(seq_along(response), function(i) {
-  tmp[c(ids, response[i])]
-})
-
-names(tmp) <- response
-
-tmp <- lapply(tmp, function(x) reshape2::melt(x, id = ids, variable.name = "VAR"))
-
+## Paired tests
+  
 if(paired_tests) {
   tests <- lapply(tmp, function(z) {
     
@@ -101,15 +111,21 @@ if(paired_tests) {
   })
 }
 
-# z <- tmp[[1]]
-tmp <- lapply(tmp, function(z) {tmp.mean <- reshape2::dcast(z, ...~ VAR, mean, na.rm = TRUE) 
-  tmp.sd <- dcast(z, ... ~ VAR, sd, na.rm = TRUE)
-  tmp.n <- dcast(z, ... ~ VAR, value.var = "value", fun.aggregate = function(x) sum(!is.na(x)))
-  if(!identical(tmp.mean[ids], tmp.sd[ids])) stop("mean and standard deviation data frames are not identical")
-  if(!identical(tmp.mean[ids], tmp.n[ids])) stop("mean and number of observations data frames are not identical")
-  if(!identical(tmp.sd[ids], tmp.n[ids])) stop("standard deviation and number of observations data frames are not identical")
-  list(mean = tmp.mean, sd = tmp.sd, n = tmp.n)  })
+## Append mean, standard deviation and n data frames to a list   
 
+  # z <- tmp[[1]]
+  tmp <- lapply(tmp, function(z) {
+    tmp.mean <- reshape2::dcast(z, ...~ VAR, mean, na.rm = TRUE) 
+    tmp.sd <- dcast(z, ... ~ VAR, sd, na.rm = TRUE)
+    tmp.n <- dcast(z, ... ~ VAR, value.var = "value", fun.aggregate = function(x) sum(!is.na(x)))
+    if(!identical(tmp.mean[ids], tmp.sd[ids])) stop("mean and standard deviation data frames are not identical")
+    if(!identical(tmp.mean[ids], tmp.n[ids])) stop("mean and number of observations data frames are not identical")
+    if(!identical(tmp.sd[ids], tmp.n[ids])) stop("standard deviation and number of observations data frames are not identical")
+    list(mean = tmp.mean, sd = tmp.sd, n = tmp.n)  
+  })
+
+## 
+  
 b <- lapply(tmp, function(z) {
   lapply(z, function(i) { g <- reshape(i, direction = "wide", idvar = gids, timevar = levels)
     nam <- strsplit(colnames(g), "\\.")
@@ -117,10 +133,14 @@ b <- lapply(tmp, function(z) {
     g})
   })
 
+##
+
 NORM_STAT <- lapply(b, function(g) {
   tp <- lapply(treat.levs, function(z) cbind(g$mean[gids], treatment = z, norm_stat_treat = sqrt(g$n[,z])*g$mean[,z]/g$sd[,z], norm_stat_cont = sqrt(g$n[,control])*g$mean[,control]/g$sd[,control]))
   do.call(rbind, tp)
 })
+
+## 
 
 CI_TYPE_SWITCH <-lapply(NORM_STAT, function(x) {
   daa <- apply(x[c("norm_stat_treat", "norm_stat_cont")], 1, function(g) min(g) < 3)
@@ -131,16 +151,22 @@ if(is.null(ci.type)) {
   ci.type <- ifelse(any(unlist(CI_TYPE_SWITCH)), "t", "z")
 }
 
+## Log response ratios
+
 LNRR <- lapply(names(b), function(g) {
-  tp <- lapply(treat.levs, function(z) cbind(b[[g]]$mean[gids], treatment = z, response = g, lnrr = log(b[[g]]$mean[,z]) - log(b[[g]]$mean[,control])))
+  tp <- lapply(treat.levs, function(z) cbind(b[[g]]$mean[gids], treatment = z, response = g, lnrr = log(b[[g]]$mean[,z], base) - log(b[[g]]$mean[,control], base = base)))
   do.call(rbind, tp)})
 
 names(LNRR) <- names(b)
+
+## Variance
 
 VAR <- lapply(b, function(g) {
   tp <- lapply(treat.levs, function(z) {
     cbind(g$mean[gids], treatment = z, var = (g$sd[,z]^2)/(g$n[,z]*g$mean[,z]^2) + (g$sd[,control]^2)/(g$n[,control]*g$mean[,control]^2))})
   do.call(rbind, tp)})
+
+## Confidence interval spread
 
 if(ci.type == "t"){
 CRIT <- lapply(b, function(g) {
