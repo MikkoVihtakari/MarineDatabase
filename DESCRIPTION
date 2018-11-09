@@ -10,7 +10,7 @@ License: MIT
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.0
-Imports: lubridate, openxlsx, oce, ggplot2, reshape2, zoo, taxize, lazyeval, plyr, dplyr, broom, patchwork
+Imports: lubridate, openxlsx, oce, ggplot2, reshape2, zoo, taxize, lazyeval, plyr, dplyr, broom
 Suggests: knitr, rmarkdown, devtools
 Remotes: thomasp85/patchwork
 VignetteBuilder: knitr
