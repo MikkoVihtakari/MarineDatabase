@@ -37,12 +37,7 @@
 #' @export
 
 # Test parameters
-# data_file = "../../../Rijpfjorden Carbon Bridge/Data/Zooplankton/zoopl_rjipfj_2010_2013_ind_m3.xlsx"; sheet = "ALL_to_R"; dataStart = 11; dataEnd = 1000; dataCols = NULL; control_stations = FALSE; output_format = "as.Date"; add_coordinates = FALSE; control_species = list(species = "species", stage = "stage", size_op = "size_op", length = "length"); species_info_cols = NULL; lookup_cols = NULL; remove_missing = TRUE
-# data_file = "Data/Kongsfjorden_zooplankton_allyears_new.xlsx"; sheet = "ALL ind m3"; dataStart = NULL; dataEnd = 1000; dataCols = NULL; output_format = "as.Date"; control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"); lookup_cols = "biomass_conv"; species_info_cols = NULL; remove_missing = TRUE; control_stations = TRUE; add_coordinates = TRUE; control_sample_names = TRUE; round2ceiling = FALSE
-# data_file = "Data/Kongsfjord_zooplankton_2005.xlsx"; sheet = "Arkusz1"; dataStart = 11; dataEnd = 1000; control_stations = TRUE; output_format = "as.Date"; species_info_cols = c("species", "stage", "length"); lookup_cols = c("size_group", "origin", "biomass_conv"); add_coordinates = TRUE; control_species = list(species = "species", stage = "stage", length = "length"); dataCols = NULL
-# data_file = "Data/Kongsfjorden_zooplankton_allyears_new.xlsx"; sheet = "ALL ind m3"
-# data_file = "Data/mesozooplankton NEW OCT 2018/mosj_2011.xlsx"; sheet = "TO USE"; 
-# dataStart = NULL; dataEnd = 1000; dataCols = NULL; output_format = "as.Date"; control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"); lookup_cols = "biomass_conv"; species_info_cols = NULL; remove_missing = TRUE; control_stations = FALSE; add_coordinates = FALSE; control_sample_names = TRUE; round2ceiling = FALSE
+# data_file = "Data/Zooplankton/Current files/zoopl_rjipfj_2010.xlsx"; sheet = 1; dataStart = NULL; dataEnd = 1000; dataCols = NULL; output_format = "as.Date"; control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"); lookup_cols = c("biomass_conv", "origin", "phylum", "class", "order"); species_info_cols = NULL; remove_missing = TRUE; control_stations = FALSE; add_coordinates = FALSE; control_sample_names = TRUE; round2ceiling = FALSE
 
 read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEnd = 1000, dataCols = NULL, output_format = "as.Date", control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"), lookup_cols = "biomass_conv", species_info_cols = NULL, remove_missing = TRUE, control_stations = FALSE, add_coordinates = FALSE, control_sample_names = TRUE, round2ceiling = FALSE) {
 
@@ -66,7 +61,7 @@ if(is.data.frame(data_file)) {
   if(file_ext %in% c("xlsx", "xls")) {
     
     if(is.null(dataStart)) {
-      tmp <- openxlsx::read.xlsx(data_file, sheet = sheet)[1]
+      tmp <- openxlsx::read.xlsx(data_file, sheet = sheet, skipEmptyRows = FALSE)[1]
       dataStart <- which(trimws(tmp[[1]]) == "Calanus finmarchicus")[1]
     }
     

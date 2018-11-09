@@ -5,10 +5,10 @@
 #' @param levels Name of the column that contains factor which should be used to separate response ratios.  
 #' @param groups character vector specifying the names of the columns, which should used as grouping factors. 
 #' @param control the name of the control/base factor level in \code{levels} column. 
-#' @param ci.type indicates the distribution to be used for confidence intervals. \code{'z'} refers to normal distribution and \code{'t'} to t distribution. The default (\code{NULL}) is to decide the distribution based on the lowest \eqn{\sqrt(n)*mean(response)/sd(response)}{sqrt(n)*mean(response)/sd(response)} (from Hedges et al.). If over 10\% of values are less than 3, t-distribution is used. Otherwise normal.
-#' @param base either "e" (default), 2 or 10 defining the base for the log response ratio. While "e" (i.e. \code{ln}) is the most used variant (see Hedges et al. 1999), 2 and 10 based logarithms are easier to read. Experimental. Do not use.
+#' @param ci.type indicates the distribution to be used for confidence intervals. \code{'z'} refers to normal distribution and \code{'t'} to t distribution. The default (\code{NULL}) is to decide the distribution based on the lowest \eqn{\sqrt(n)*mean(response)/sd(response)} (from Hedges et al. 1999). If over 10\% of values are less than 3, t-distribution is used. Otherwise normal.
+#' @param base either "e" (default), 2 or 10 defining the base for the log response ratio. While "e" (i.e. \code{ln}) is the most used variant (see Hedges et al. 1999), 2 and 10 based logarithms are easier to read. Experimental. DO NOT USE in publications.
 #' @param ci.conf the confidence level for the confidence interval. Defaults to 0.95 (95\%).
-#' @param unlog logical indicating whether the output should be unlogged. Defaults to \code{FALSE}. Read the page 1152 under eq. 9 and what follows on the next page from Hedges et al. before you switch this to \code{TRUE} in publications. 
+#' @param unlog logical indicating whether the output should be unlogged. Defaults to \code{FALSE}. Read the page 1152 under eq. 9 and what follows on the next page from Hedges et al. (1999) before you switch this to \code{TRUE} in publications. The unlogging is done by simply exponentiating for confidence intervals, while the response ratio (mean) is calculated as \eqn{\exp(LnR + var/2)} after Greenacre (2016). Currently untested for response ratios.
 #' @param sqrt_transform Logical indicating whether values should be square root transformed prior calculation of means. This option makes the distributions more normally distributed, but might change the outcome. Highly experimental. DO NOT USE in publications.  
 #' @param paired_tests Logical indicating whether \link[stats]{wilcox.test} should be used to "confirm" the results indicated by the confidence intervals for the response ratios.
 #' @param all.data logical indicating whether all data used in calculations should be returned instead of a concise table of relevant results. Defaults to \code{FALSE}.
@@ -24,12 +24,14 @@
 #' @references Hedges, L. V, Gurevitch, J., & Curtis, P.S. (1999) The meta-analysis of response ratios in experimental ecology. Ecology, 80, 1150–1156. 
 #' 
 #' Lajeunesse, M. J. (2011). On the meta-analysis of response ratios for studies with correlated and multi-group designs. Ecology, 92, 2049-2055.
+#' 
+#' Greenacre, M., (2016). Data reporting and visualization in ecology. Polar Biology 39, 2189–2205. doi:10.1007/s00300-016-2047-2
 #' @import reshape2 broom
 #' @author Mikko Vihtakari
 #' @export
 
 ## Test parameters
-# unlog = FALSE; ci.type = "t"; ci.conf = 0.95; all.data = FALSE; signif = 2; sqrt_transform = FALSE; paired_tests = TRUE
+# unlog = FALSE; ci.type = "t"; ci.conf = 0.95; all.data = FALSE; signif = 2; sqrt_transform = FALSE; paired_tests = TRUE; base = "e"
 # ci.type = NULL; ci.conf = 0.95; paired_tests = FALSE; unlog = FALSE; all.data = FALSE; signif = 2; sqrt_transform = FALSE
 # X = y; response = "value"; groups = "Area"; levels = "Type"; control = "Glacier outflow"
 # X = x; response = "value"; levels = "ytemp"; groups = c("variable", "region"); control = "cold"
@@ -208,8 +210,10 @@ out$data <- lapply(out$data, function(g) {
 
 if(unlog) {
   out$data <- lapply(out$data, function(g) {
+    if(base != exp(1)) stop("Unlogging works only for base = 'e'")
     tp <- data.frame(g)
-    tp[c("lnrr", "ci.min", "ci.max")] <- 100*exp(tp[c("lnrr", "ci.min", "ci.max")])
+    tp$lnrr <- 100*exp(tp$lnrr + tp$var/2) # From Greenacre 2016. Polar biol.
+    tp[c("ci.min", "ci.max")] <- 100*exp(tp[c("ci.min", "ci.max")])
     tp
   })
 }
