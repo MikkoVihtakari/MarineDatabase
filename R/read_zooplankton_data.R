@@ -37,7 +37,7 @@
 #' @export
 
 # Test parameters
-# data_file = "Data/Zooplankton/Current files/zoopl_rjipfj_2010.xlsx"; sheet = 1; dataStart = NULL; dataEnd = 1000; dataCols = NULL; output_format = "as.Date"; control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"); lookup_cols = c("biomass_conv", "origin", "phylum", "class", "order"); species_info_cols = NULL; remove_missing = TRUE; control_stations = FALSE; add_coordinates = FALSE; control_sample_names = TRUE; round2ceiling = FALSE
+# data_file = "Data/Zooplankton/Current files/zoopl_rjipfj_2012_ICE.xlsx"; sheet = 1; dataStart = NULL; dataEnd = 1000; dataCols = NULL; output_format = "as.Date"; control_species = list(species = "species", stage = "stage", size_op = "size_op", length = "length"); lookup_cols = c("biomass_conv", "origin", "phylum", "class", "order"); species_info_cols = NULL; remove_missing = TRUE; control_stations = FALSE; add_coordinates = FALSE; control_sample_names = TRUE; round2ceiling = FALSE
 
 read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEnd = 1000, dataCols = NULL, output_format = "as.Date", control_species = list(species = "species", stage = "stage", size_op = NULL, length = "length"), lookup_cols = "biomass_conv", species_info_cols = NULL, remove_missing = TRUE, control_stations = FALSE, add_coordinates = FALSE, control_sample_names = TRUE, round2ceiling = FALSE) {
 
@@ -180,8 +180,9 @@ sp <- dt[species_info_cols]
 
 if(!sp_info_cols) names(sp) <- names(unlist(control_species))
 
+## ####
 if(is.list(control_species)) {
-## ###  
+## ####  
   sp$species <- gsub("\\b\\s\\s\\b", " ", sp$species, perl = TRUE)
   sp$species <- gsub("\\(cf.\\)", "", sp$species)
   sp$species <- gsub(" cf. ", " ", sp$species)
@@ -206,6 +207,11 @@ if(is.list(control_species)) {
   if(any(sp$species %in% (tmp_sp <- "Isopoda Bopyridae"))) {
     sp$species[sp$species == tmp_sp] <- "Bopyridae"
   }
+  
+  if(any(sp$species %in% (tmp_sp <- "Gastropoda")) & any(sp$stage %in% c("veliger (incl. Margarites)", "veliger (cf. Margarites)"))) {
+    sp$stage[sp$species == tmp_sp & sp$stage %in% c("veliger (incl. Margarites)", "veliger (cf. Margarites)")]  <- "veliger (incl. Margarites and Velutina)"
+  }
+  
   
   sp[sp$species == "Calanoida nauplii", c("species", "stage")] <- c("Calanoida", "nauplii")
   sp[sp$species == "Nemertea pilidium", c("species", "stage")] <- c("Nemertea", "pilidium")
@@ -238,6 +244,8 @@ if(is.list(control_species)) {
   ## Stage
   sp$stage <- trimws(sp$stage)
   sp$stage <- gsub("indet. ", "", sp$stage)
+  sp$stage <- gsub("indet.", "", sp$stage)
+  sp$stage <- trimws(sp$stage)
   sp$stage[sp$stage == "AF AM" & !is.na(sp$stage)] <- "AF/AM"
   sp$stage[sp$stage == "larvae furcilia" & !is.na(sp$stage)] <- "furcilia"
   sp$stage[sp$stage == "larvae calyptopis" & !is.na(sp$stage)] <- "calyptopis"
@@ -252,7 +260,7 @@ if(is.list(control_species)) {
   sp$stage[sp$stage == "juveniles" & !is.na(sp$stage)] <- "juvenile"
   sp$stage <- trimws(sp$stage)
   
-  ## Merge with ZOOPL
+  ## Merge with ZOOPL ####
 
   if(any(names(unlist(control_species)) %in% "size_op")) {
     zoopl <- ZOOPL[c("species", "stage", "size_op", "length_old", "species_ID", lookup_cols)]
@@ -269,7 +277,7 @@ if(is.list(control_species)) {
   if(any(is.na(sp$species_ID))) {
     
     if(length(sp[is.na(sp$species_ID),"size_op"]) > 0) {
-      stop(paste(sp[is.na(sp$species_ID), "species"], collapse = " "), " may have size_op the wrong way round")
+      stop("stage or size_op error with ", warn_vec(sp[is.na(sp$species_ID), "species"]))
     }
     
     tmp <- sp[is.na(sp$species_ID), "species"]

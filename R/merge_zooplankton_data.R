@@ -7,7 +7,7 @@
 #' @author Mikko Vihtakari
 #' @export
 
-# x = dt1; y = dt2011
+# x = dt; y = d2012.2
 merge_zooplankton_data <- function(x, y) {
   
   if(!all(c(class(x), class(y)) == "ZooplanktonData")) stop("x and y have to be ZooplanktonData objects. See ?read_zooplankton_data")
@@ -40,9 +40,18 @@ merge_zooplankton_data <- function(x, y) {
   
   # test_equality(sp, xsp)
   
-    if(nrow(sp) != max(c(nrow(x$splist), nrow(y$splist)))) message(paste(nrow(sp) - max(c(nrow(x$splist), nrow(y$splist)))), " rows added to splist")
+  if(nrow(sp) != max(c(nrow(x$splist), nrow(y$splist)))) message(paste(nrow(sp) - max(c(nrow(x$splist), nrow(y$splist)))), " rows added to splist")
   
-  if(ncol(sp) != max(c(ncol(x$splist), ncol(y$splist)))) message(paste(ncol(sp) - max(c(ncol(x$splist), ncol(y$splist)))), " columns added to splist")
+  test <- ncol(sp) - max(c(ncol(x$splist), ncol(y$splist)))
+  
+  if(ncol(sp) != max(c(ncol(x$splist), ncol(y$splist)))) {
+    if(test < 0) {
+      sptest <- list(x$splist, y$splist)[[which.max(c(ncol(x$splist), ncol(y$splist)))]]
+      message(names(sptest)[!names(sptest) %in% names(sp)], " column removed from splist")
+  } else {
+   message(paste(ncol(sp) - max(c(ncol(x$splist), ncol(y$splist)))), " columns added to splist") 
+  }}
+  
   
   ## Data ####
   
