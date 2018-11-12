@@ -1,11 +1,11 @@
 #' @title Calculate logarithmic response ratio from a long table
-#' @description Calculates logarithmic response ratio from a long table where each row is represents one measurement.
+#' @description Calculates logarithmic response ratio from a long table where each row represents one measurement.
 #' @param X data frame
 #' @param response character vector specifying the names of the columns for which the response ratio should be calculated.
 #' @param levels Name of the column that contains factor which should be used to separate response ratios.  
 #' @param groups character vector specifying the names of the columns, which should used as grouping factors. 
 #' @param control the name of the control/base factor level in \code{levels} column. 
-#' @param ci.type indicates the distribution to be used for confidence intervals. \code{'z'} refers to normal distribution and \code{'t'} to t distribution. The default (\code{NULL}) is to decide the distribution based on the lowest \eqn{\sqrt(n)*mean(response)/sd(response)} (from Hedges et al. 1999). If over 10\% of values are less than 3, t-distribution is used. Otherwise normal.
+#' @param ci.type indicates the distribution to be used for confidence intervals. \code{'z'} refers to normal distribution and \code{'t'} to t distribution. The default (\code{NULL}) is to decide the distribution based on the lowest \eqn{\sqrt(n)*mean(response)/sd(response)} (from Hedges et al. 1999). If over 10\% of values are less than 3, t-distribution is used. Otherwise normal. Note that Hedges et al. (1999) adviced for using normal distribution and that the t-distribution is an experimental addition, but I have used it in publications. The CIs will be wider (i.e. less "significant" results) when t-distribution is used. Consider using \code{paired_tests} to confirm your CIs. 
 #' @param base either "e" (default), 2 or 10 defining the base for the log response ratio. While "e" (i.e. \code{ln}) is the most used variant (see Hedges et al. 1999), 2 and 10 based logarithms are easier to read. Experimental. DO NOT USE in publications.
 #' @param ci.conf the confidence level for the confidence interval. Defaults to 0.95 (95\%).
 #' @param unlog logical indicating whether the output should be unlogged. Defaults to \code{FALSE}. Read the page 1152 under eq. 9 and what follows on the next page from Hedges et al. (1999) before you switch this to \code{TRUE} in publications. The unlogging is done by simply exponentiating for confidence intervals, while the response ratio (mean) is calculated as \eqn{\exp(LnR + var/2)} after Greenacre (2016). Currently untested for response ratios.

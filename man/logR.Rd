@@ -19,7 +19,7 @@ logR(X, response, levels, groups, control, ci.type = NULL,
 
 \item{control}{the name of the control/base factor level in \code{levels} column.}
 
-\item{ci.type}{indicates the distribution to be used for confidence intervals. \code{'z'} refers to normal distribution and \code{'t'} to t distribution. The default (\code{NULL}) is to decide the distribution based on the lowest \eqn{\sqrt(n)*mean(response)/sd(response)} (from Hedges et al. 1999). If over 10\% of values are less than 3, t-distribution is used. Otherwise normal.}
+\item{ci.type}{indicates the distribution to be used for confidence intervals. \code{'z'} refers to normal distribution and \code{'t'} to t distribution. The default (\code{NULL}) is to decide the distribution based on the lowest \eqn{\sqrt(n)*mean(response)/sd(response)} (from Hedges et al. 1999). If over 10\% of values are less than 3, t-distribution is used. Otherwise normal. Note that Hedges et al. (1999) adviced for using normal distribution and that the t-distribution is an experimental addition, but I have used it in publications. The CIs will be wider (i.e. less "significant" results) when t-distribution is used. Consider using \code{paired_tests} to confirm your CIs.}
 
 \item{ci.conf}{the confidence level for the confidence interval. Defaults to 0.95 (95\%).}
 
@@ -39,7 +39,7 @@ logR(X, response, levels, groups, control, ci.type = NULL,
 Returns a list where \code{$data} element contains the calculated response ratios for each \code{response} in a separate list named by the response's column name. \code{$info} contains information how the response ratios were calculated and, if \code{paired_tests = TRUE}, the \code{$tests} element gives \link[stats]{wilcox.test} results to "confirm" significance of the confidence intervals for the response ratios. Nonconforming tests are listed under \code{$nonconforming}.
 }
 \description{
-Calculates logarithmic response ratio from a long table where each row is represents one measurement.
+Calculates logarithmic response ratio from a long table where each row represents one measurement.
 }
 \details{
 The calculations are based on Hedges et al. (1999), with the exception that t-distribution is used to acquire confidence intervals instead of normal distribution. The difference is minimal for sample sizes > 20, but the confidence intervals will be a lot more conservative for small sample sizes leading to fewer false positives. Use \code{ci.type = "z"} to use normal distribution for CI estimation as described in the original source.

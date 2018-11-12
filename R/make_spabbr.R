@@ -16,6 +16,8 @@ make_spabbr <- function(x, id = TRUE) {
       if(length(k) == 1) {
         if(k[1] == "Copepoda") {
           paste0(toupper(substr(k[1], 1, 3)), "naup") 
+        } else if(k[1] == "Siphonostomatoida") {
+          "Siphoida"
         } else {
           substr(k[1], 1, 6)    
         }

@@ -22,14 +22,7 @@
 #' 
 
 ## Test parameters
-# obj = dt; biomass = FALSE; sp_group = "origin"; meta_group = c("expedition" ,"station", "lon", "lat", "lon.utm", "lat.utm", "date"); meta_group_method = "depth_mean"; remove_noncont = FALSE; warnings = TRUE
 # obj = dt; sp_group = "species"; meta_group = NULL; meta_group_method = "depth_mean"; biomass = FALSE; remove_noncont = FALSE; warnings = TRUE
-# obj = tp; sp_group = NULL; meta_group = c("expedition" , "station", "area", "bottom_depth", "lon", "lat", "lon.utm", "lat.utm", "date");  meta_group_method = "total_sum"; biomass = TRUE; remove_noncont = TRUE; warnings = TRUE
-# obj = dt; biomass = TRUE; sp_group = "species"; meta_group = NULL; meta_group_method = "none"; remove_noncont = FALSE; warnings = TRUE
-# obj  = tmp; biomass = FALSE; sp_group = "group"; meta_group = c("expedition", "station", "area", "season", "bottom_depth", "lon", "lat", "lon.utm", "lat.utm", "date"); meta_group_method = "depth_mean"; remove_noncont = TRUE; warnings = TRUE
-# obj = dt; sp_group = "species"; meta_group = "id"; biomass = FALSE; remove_noncont = TRUE; warnings = TRUE; meta_group_method = "depth_mean"
-# obj = dt; sp_group = "species"; meta_group = NULL; meta_group_method = "depth_mean"; biomass = FALSE; remove_noncont = TRUE; warnings = TRUE
-# obj = dt; sp_group = "species"; meta_group = NULL; meta_group_method = "depth_mean"; biomass = TRUE; remove_noncont = TRUE; warnings = TRUE
 summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, meta_group_method = "depth_mean", biomass = FALSE, remove_noncont = FALSE, warnings = TRUE) {
 
   ## Tests ####
