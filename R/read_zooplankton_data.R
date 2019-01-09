@@ -146,7 +146,7 @@ tmp[names(tmp) %in% factor_cols] <- lapply(tmp[names(tmp) %in% factor_cols], fun
 
 if(add_coordinates) {
   tmp$longitude <- as.numeric(as.character(plyr::mapvalues(tmp$station, STATIONS$station, STATIONS$lon, warn = FALSE)))
-  tmp$latitude <- as.numeric(as.character(plyr::mapvalues(tmp$station, STATIONS$station, STATIONS$lon, warn = FALSE)))
+  tmp$latitude <- as.numeric(as.character(plyr::mapvalues(tmp$station, STATIONS$station, STATIONS$lat, warn = FALSE)))
 }
 
 ## Add ID
