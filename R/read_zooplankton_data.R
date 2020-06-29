@@ -47,7 +47,7 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
   
   if(!is.null(dataCols)) stop("dataCols argument has not been implemented yet.")
   if(!is.null(control_species) & any(names(control_species) != c("species", "stage", "size_op", "length"))) stop("control_species has to be either NULL or a named list with elements species, stage, size_op, length. See Usage for an example, Arguments and Details for explanation")
- 
+  
   ## Open the file ###
   
   if(is.data.frame(data_file)) {
@@ -163,9 +163,10 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
   
   tmp <- tmp[c(first_cols, names(tmp)[!names(tmp) %in% required_cols])]
   
-  message(paste("Samples", paste(tmp[emptyCols,"sample_name"], collapse = ", "), "removed from the dataset as they contained no abundance data"))
-  
-  tmp <- tmp[-emptyCols,]
+  if(length(emptyCols) > 0) { ## Remove empty columns
+    message(paste("Samples", paste(tmp[emptyCols,"sample_name"], collapse = ", "), "removed from the dataset as they contained no abundance data"))
+    tmp <- tmp[-emptyCols,]
+  }
   
   meta <- droplevels(tmp)
   
@@ -366,11 +367,13 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
     tmp <- as.numeric(gsub("\\D", "", tmp))
     firstCol <- paste0("X", min(tmp[tmp > 4]))
     dat <- dt[which(names(dt) == firstCol):ncol(dt)]
-    dat <- dat[-emptyCols]
+    
+    if(length(emptyCols) > 0) dat <- dat[-emptyCols]
+    
     
   } else {
     dat <- dt[dataCols]  
-    dat <- dat[-emptyCols]
+    if(length(emptyCols) > 0) dat <- dat[-emptyCols]
   }
   
   dat <- t(dat)
