@@ -8,7 +8,7 @@
 #' @param control_stations Logical indicating whether station names should be controlled against a list of standardized station names (see \code{\link{STATIONS}}). Should be \code{FALSE} for any other dataset than the standard monitoring (MOSJ) datasets.
 #' @param output_format Output formar for date. See \code{\link{convert_dates}}.
 #' @param add_coordinates If \code{TRUE} coordinates will be added to metadata from the list of standardized station names.
-#' @param control_species Either \code{NULL} or a character vector giving the names for species, stage, length operator and length columns from the Excel sheet. These \strong{names will be used as column names in the R output}. The size operator (\code{size_op}) element is used to match old type zooplankton files (most of them) and can be ignored for the new standardized files.
+#' @param control_species A character vector giving the names for species, stage, length operator and length columns from the Excel sheet. These \strong{names will be used as column names in the R output}. The size operator (\code{size_op}) element is used to match old type zooplankton files (most of them) and can be ignored for the new standardized files.
 #' @param species_info_cols Character vector specifying the names of species information columns that should be preserved. Required only if \code{control_species = NULL}, otherwise ignored. Adds some flexibility if species names are messed up, but use of \code{control_species} list is recommended.
 #' @param lookup_cols Character vector specifying the names of columns from the zooplankton lookup list (\code{\link{ZOOPL}}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}. 
 #' @param remove_missing Logical indicating whether species with column sums of 0 should be removed from the output.
@@ -17,7 +17,7 @@
 #' @return Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames: \code{$data} (abundance data), \code{$meta} (meta-data), and \code{$splist} (species information).
 #' @details Zooplankton taxonomy data from IOPAN are received in (more or less) standard format on MS Excel sheets. This function attempts to read that format and enable passing data to futher manipulation in R. The structure of the Excel sheet is explained in Figure 1. 
 #' 
-#' \figure{zooplankton_data_sheet.png}{options: width=700}
+#' \figure{zooplankton_data_sheet.png}{options: width=1000}
 #' 
 #' Figure 1. Example how zooplankton Excel sheets tend to be arranged. 
 #'  \enumerate{
@@ -37,7 +37,7 @@
 #' @export
 
 # Test parameters
-# data_file = "Data/mosj_2017_mesozooplankton_taxonomy_multinet200.xlsx"; sheet = 1; dataStart = NULL; dataEnd = 1000; dataCols = NULL; output_format = "as.Date"; control_species = c("species", "stage", "size_op", "length"); lookup_cols = c("biomass_conv", "origin", "phylum", "class", "order"); species_info_cols = NULL; remove_missing = TRUE; control_stations = FALSE; add_coordinates = FALSE; control_sample_names = TRUE; round2ceiling = FALSE
+# data_file = "Data/mosj_2017_mesozooplankton_taxonomy_multinet200.xlsx"; sheet = 1; dataStart = NULL; dataEnd = 1e4; dataCols = NULL; output_format = "as.Date"; control_species = c("species", "stage", "size_op", "length"); lookup_cols = "biomass_conv"; species_info_cols = NULL; remove_missing = TRUE; control_stations = FALSE; add_coordinates = FALSE; control_sample_names = TRUE; round2ceiling = FALSE
 
 read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEnd = 1000, dataCols = NULL, output_format = "as.Date", control_species = c("species", "stage", "size_op", "length"), lookup_cols = "biomass_conv", species_info_cols = NULL, remove_missing = TRUE, control_stations = FALSE, add_coordinates = FALSE, control_sample_names = TRUE, round2ceiling = FALSE) {
   
@@ -47,8 +47,7 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
   
   if(!is.null(dataCols)) stop("dataCols argument has not been implemented yet.")
   if(!is.null(control_species) & any(names(control_species) != c("species", "stage", "size_op", "length"))) stop("control_species has to be either NULL or a named list with elements species, stage, size_op, length. See Usage for an example, Arguments and Details for explanation")
-  
-  
+ 
   ## Open the file ###
   
   if(is.data.frame(data_file)) {
@@ -170,7 +169,7 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
   
   meta <- droplevels(tmp)
   
-  row.names(meta) <- 1:nrow(meta)
+  row.names(meta) <-  meta$id # 1:nrow(meta)
   
   ####################
   ## Species list ####
@@ -188,9 +187,9 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
   
   names(sp) <- control_species
   
-  ## ####
+  ## ###
   if(!is.null(control_species)) {
-    ## ####  
+    ## ###
     sp$species <- gsub("\\b\\s\\s\\b", " ", sp$species, perl = TRUE)
     sp$species <- gsub("\\(cf.\\)", "", sp$species)
     sp$species <- gsub(" cf. ", " ", sp$species)
@@ -269,7 +268,7 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
     sp$stage[sp$stage == "juveniles" & !is.na(sp$stage)] <- "juvenile"
     sp$stage <- trimws(sp$stage)
     
-    ## Merge with ZOOPL ####
+    ## Merge with ZOOPL ###
     
     if(any(control_species %in% "size_op")) {
       zoopl <- ZOOPL[c("species", "stage", "size_op", "length_old", "species_ID", lookup_cols)]
@@ -407,17 +406,20 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
   if(duplicate_sp) {
     
     newdat <- dat
-    newdat$id <- rownames(dat)
+    newdat$id <- factor(rownames(dat), levels = rownames(dat))
     names(newdat) <- make.names(names(newdat), unique = TRUE)
     
     newdat <- reshape2::melt(newdat, id = "id")
+    
     levels(newdat$variable) <- gsub("\\..+$", "", levels(newdat$variable))
     
-    newdat <- dcast(newdat, id ~ variable, sum)
+    newdat <- reshape2::dcast(newdat, id ~ variable, sum)
     rownames(newdat) <- newdat$id
     newdat <- newdat[!names(newdat) %in% "id"]
     
     message(paste(ncol(dat) - ncol(newdat), "species entries summed up.", nrow(dat) - nrow(newdat), "rows lost."))
+    
+    if(!all.equal(rownames(newdat), rownames(dat))) stop("The new row names do not match the old ones during the duplicate species removal step.")
     
     dat <- newdat
     
@@ -425,7 +427,6 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
     sp <- sp[!duplicated(sp$id),]
     rownames(sp) <- 1:nrow(sp)
   }
-  
   
   ###############################
   ### Remove missing species ####

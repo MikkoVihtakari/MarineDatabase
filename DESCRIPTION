@@ -1,7 +1,7 @@
 Package: MarineDatabase
 Type: Package
 Title: Export data to Norwegian Polar Institute's marine database
-Version: 0.3.0
+Version: 0.3.1
 Date: 2020-06-29
 Author: Mikko Vihtakari [cre, aut], Anette Wold [aut], Conrad Helgeland [ctb], Alexey Pavlov [ctb]
 Maintainer: Mikko Vihtakari <mikko.vihtakari@hi.no>

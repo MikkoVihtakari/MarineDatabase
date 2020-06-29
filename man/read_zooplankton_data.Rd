@@ -34,7 +34,7 @@ read_zooplankton_data(
 
 \item{output_format}{Output formar for date. See \code{\link{convert_dates}}.}
 
-\item{control_species}{Either \code{NULL} or a character vector giving the names for species, stage, length operator and length columns from the Excel sheet. These \strong{names will be used as column names in the R output}. The size operator (\code{size_op}) element is used to match old type zooplankton files (most of them) and can be ignored for the new standardized files.}
+\item{control_species}{A character vector giving the names for species, stage, length operator and length columns from the Excel sheet. These \strong{names will be used as column names in the R output}. The size operator (\code{size_op}) element is used to match old type zooplankton files (most of them) and can be ignored for the new standardized files.}
 
 \item{lookup_cols}{Character vector specifying the names of columns from the zooplankton lookup list (\code{\link{ZOOPL}}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}.}
 
@@ -59,7 +59,7 @@ Reads IOPAN and NPI standard format zooplankton data
 \details{
 Zooplankton taxonomy data from IOPAN are received in (more or less) standard format on MS Excel sheets. This function attempts to read that format and enable passing data to futher manipulation in R. The structure of the Excel sheet is explained in Figure 1. 
 
-\figure{zooplankton_data_sheet.png}{options: width=700}
+\figure{zooplankton_data_sheet.png}{options: width=1000}
 
 Figure 1. Example how zooplankton Excel sheets tend to be arranged. 
  \enumerate{
