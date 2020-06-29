@@ -4,13 +4,22 @@
 \alias{read_zooplankton_data}
 \title{Read NPI zooplanton data from an Excel sheet}
 \usage{
-read_zooplankton_data(data_file, sheet = 1, dataStart = NULL,
-  dataEnd = 1000, dataCols = NULL, output_format = "as.Date",
-  control_species = list(species = "species", stage = "stage", size_op =
-  NULL, length = "length"), lookup_cols = "biomass_conv",
-  species_info_cols = NULL, remove_missing = TRUE,
-  control_stations = FALSE, add_coordinates = FALSE,
-  control_sample_names = TRUE, round2ceiling = FALSE)
+read_zooplankton_data(
+  data_file,
+  sheet = 1,
+  dataStart = NULL,
+  dataEnd = 1000,
+  dataCols = NULL,
+  output_format = "as.Date",
+  control_species = c("species", "stage", "size_op", "length"),
+  lookup_cols = "biomass_conv",
+  species_info_cols = NULL,
+  remove_missing = TRUE,
+  control_stations = FALSE,
+  add_coordinates = FALSE,
+  control_sample_names = TRUE,
+  round2ceiling = FALSE
+)
 }
 \arguments{
 \item{data_file}{Path to the Excel file containing zooplankton data}
@@ -25,7 +34,7 @@ read_zooplankton_data(data_file, sheet = 1, dataStart = NULL,
 
 \item{output_format}{Output formar for date. See \code{\link{convert_dates}}.}
 
-\item{control_species}{Either \code{NULL} or a named list giving the name of species, stage, size operator and length columns in data, which will be used to control species names against a list of standardized zooplanton species (see \code{\link{ZOOPL}}). Recommended. Setting this to \code{NULL} may lead to unexpected behaviour. The size operator (\code{size_op}) element is used to match old type zooplankton files (most of them) and can be ignored for the new standardized files by setting \code{size_op = NULL}.}
+\item{control_species}{Either \code{NULL} or a character vector giving the names for species, stage, length operator and length columns from the Excel sheet. These \strong{names will be used as column names in the R output}. The size operator (\code{size_op}) element is used to match old type zooplankton files (most of them) and can be ignored for the new standardized files.}
 
 \item{lookup_cols}{Character vector specifying the names of columns from the zooplankton lookup list (\code{\link{ZOOPL}}) that should be returned together with \code{species_info_cols}. If \code{NULL} (default), only \code{species_info_cols} will be returned. Has no effect, if \code{control_species = FALSE}.}
 
@@ -65,10 +74,11 @@ The function sums up duplicate species entries for each sample. The function att
 The function is currently relatively unstable and most likely requires manual debugging for each dataset.
 }
 \seealso{
-Other ZooplanktonData: \code{\link{merge_zooplankton_data}},
-  \code{\link{print.ZooplanktonData}},
-  \code{\link{subset.ZooplanktonData}},
-  \code{\link{summarize_zooplankton_data}}
+Other ZooplanktonData: 
+\code{\link{merge_zooplankton_data}()},
+\code{\link{print.ZooplanktonData}()},
+\code{\link{subset.ZooplanktonData}()},
+\code{\link{summarize_zooplankton_data}()}
 }
 \author{
 Mikko Vihtakari, Anette Wold

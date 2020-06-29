@@ -4,7 +4,9 @@
 \name{kongsfjord_watermasses}
 \alias{kongsfjord_watermasses}
 \title{Water mass definitions for Kongsfjorden}
-\format{data.frame}
+\format{
+data.frame
+}
 \usage{
 data("kongsfjord_watermasses")
 }

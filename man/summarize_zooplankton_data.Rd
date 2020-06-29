@@ -4,9 +4,15 @@
 \alias{summarize_zooplankton_data}
 \title{Summarize ZooplanktonData species abundances based on information from meta-data or species list}
 \usage{
-summarize_zooplankton_data(obj, sp_group = NULL, meta_group = NULL,
-  meta_group_method = "depth_mean", biomass = FALSE,
-  remove_noncont = FALSE, warnings = TRUE)
+summarize_zooplankton_data(
+  obj,
+  sp_group = NULL,
+  meta_group = NULL,
+  meta_group_method = "depth_mean",
+  biomass = FALSE,
+  remove_noncont = FALSE,
+  warnings = TRUE
+)
 }
 \arguments{
 \item{obj}{\link[=read_zooplankton_data]{ZooplanktonData} object}
@@ -37,9 +43,10 @@ Returns a list of class \code{ZooplanktonData}. The list contains 3 data frames:
 Averages \link[=read_zooplankton_data]{ZooplanktonData} objects by grouping varaibles from meta-data (\code{$meta}) or species list (\code{$splist}). Can be used to convert abundances to biomasses, to sum up species abundances to remove stages and to summarize species data over the entire water column or regions.
 }
 \seealso{
-Other ZooplanktonData: \code{\link{merge_zooplankton_data}},
-  \code{\link{print.ZooplanktonData}},
-  \code{\link{read_zooplankton_data}},
-  \code{\link{subset.ZooplanktonData}}
+Other ZooplanktonData: 
+\code{\link{merge_zooplankton_data}()},
+\code{\link{print.ZooplanktonData}()},
+\code{\link{read_zooplankton_data}()},
+\code{\link{subset.ZooplanktonData}()}
 }
 \concept{ZooplanktonData}

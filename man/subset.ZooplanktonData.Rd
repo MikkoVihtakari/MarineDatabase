@@ -4,8 +4,7 @@
 \alias{subset.ZooplanktonData}
 \title{Subset a ZooplanktonData object}
 \usage{
-\method{subset}{ZooplanktonData}(x, type, ..., remove_zeros = FALSE,
-  drop_levels = TRUE)
+\method{subset}{ZooplanktonData}(x, type, ..., remove_zeros = FALSE, drop_levels = TRUE)
 }
 \arguments{
 \item{x}{a \link[=read_zooplankton_data]{ZooplanktonData} object.}
@@ -28,10 +27,11 @@ Generic subset method for ZooplanktonData objects. Returns a subset of a Zooplan
 See the the \code{\link[base]{subset}} function for details.
 }
 \seealso{
-Other ZooplanktonData: \code{\link{merge_zooplankton_data}},
-  \code{\link{print.ZooplanktonData}},
-  \code{\link{read_zooplankton_data}},
-  \code{\link{summarize_zooplankton_data}}
+Other ZooplanktonData: 
+\code{\link{merge_zooplankton_data}()},
+\code{\link{print.ZooplanktonData}()},
+\code{\link{read_zooplankton_data}()},
+\code{\link{summarize_zooplankton_data}()}
 }
 \author{
 Mikko Vihtakari

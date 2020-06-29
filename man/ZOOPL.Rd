@@ -4,7 +4,9 @@
 \name{ZOOPL}
 \alias{ZOOPL}
 \title{Standardized zooplankton species names}
-\format{data.frame}
+\format{
+data.frame
+}
 \usage{
 data("ZOOPL")
 }

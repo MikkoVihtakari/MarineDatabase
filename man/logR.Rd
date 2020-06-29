@@ -4,9 +4,21 @@
 \alias{logR}
 \title{Calculate logarithmic response ratio from a long table}
 \usage{
-logR(X, response, levels, groups, control, ci.type = NULL,
-  ci.conf = 0.95, base = "e", paired_tests = FALSE, unlog = FALSE,
-  all.data = FALSE, signif = 2, sqrt_transform = FALSE)
+logR(
+  X,
+  response,
+  levels,
+  groups,
+  control,
+  ci.type = NULL,
+  ci.conf = 0.95,
+  base = "e",
+  paired_tests = FALSE,
+  unlog = FALSE,
+  all.data = FALSE,
+  signif = 2,
+  sqrt_transform = FALSE
+)
 }
 \arguments{
 \item{X}{data frame}

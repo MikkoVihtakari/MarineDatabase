@@ -4,7 +4,9 @@
 \name{STATIONS}
 \alias{STATIONS}
 \title{Standardized station names}
-\format{data.frame}
+\format{
+data.frame
+}
 \usage{
 data("stations")
 }

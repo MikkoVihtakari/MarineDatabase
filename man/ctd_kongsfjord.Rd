@@ -4,7 +4,9 @@
 \name{ctd_kongsfjord}
 \alias{ctd_kongsfjord}
 \title{Example CTD data for Kongsfjorden}
-\format{data.frame}
+\format{
+data.frame
+}
 \usage{
 data("ctd_kongsfjord")
 }

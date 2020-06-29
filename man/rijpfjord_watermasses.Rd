@@ -4,7 +4,9 @@
 \name{rijpfjord_watermasses}
 \alias{rijpfjord_watermasses}
 \title{Water mass definitions for Rijpfjorden}
-\format{data.frame}
+\format{
+data.frame
+}
 \usage{
 data("rijpfjord_watermasses")
 }

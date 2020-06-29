@@ -4,9 +4,19 @@
 \alias{convert_abundance}
 \title{Calculate and convert between abundance values for ice core and planton net data}
 \usage{
-convert_abundance(data, ab_col, ab_from = NULL, ab_to = NULL,
-  filtered = NULL, type = "icecore", cf = 1, vol_col = NULL,
-  start_col = "from", end_col = "to", unit_col = "unit")
+convert_abundance(
+  data,
+  ab_col,
+  ab_from = NULL,
+  ab_to = NULL,
+  filtered = NULL,
+  type = "icecore",
+  cf = 1,
+  vol_col = NULL,
+  start_col = "from",
+  end_col = "to",
+  unit_col = "unit"
+)
 }
 \arguments{
 \item{data}{Data.frame containing the data to be converted}

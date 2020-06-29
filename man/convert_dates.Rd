@@ -4,8 +4,14 @@
 \alias{convert_dates}
 \title{Convert Excel dates to consistent date formatting}
 \usage{
-convert_dates(dt, excel_file = NULL, file_ext = NULL, add_time = 0,
-  date_origin = "1899-12-30", output_format = "iso8601")
+convert_dates(
+  dt,
+  excel_file = NULL,
+  file_ext = NULL,
+  add_time = 0,
+  date_origin = "1899-12-30",
+  output_format = "iso8601"
+)
 }
 \arguments{
 \item{dt}{Data.frame for which the date conversions should be made. The date column has to be named as \code{date}.}

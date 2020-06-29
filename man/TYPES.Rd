@@ -4,7 +4,9 @@
 \name{TYPES}
 \alias{TYPES}
 \title{Data types}
-\format{data.frame}
+\format{
+data.frame
+}
 \usage{
 data("sample_types")
 }

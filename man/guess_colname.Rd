@@ -4,8 +4,7 @@
 \alias{guess_colname}
 \title{Guess column names from a list of candidates}
 \usage{
-guess_colname(cols = required_cols, df = dt,
-  candidates = coln_search_words)
+guess_colname(cols = required_cols, df = dt, candidates = coln_search_words)
 }
 \arguments{
 \item{cols}{Character vector of approximate column names to be guessed}

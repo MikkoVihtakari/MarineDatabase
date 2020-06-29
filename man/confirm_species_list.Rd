@@ -4,8 +4,10 @@
 \alias{confirm_species_list}
 \title{Confirm species names from the World Register of Marine Species}
 \usage{
-confirm_species_list(x, ranks = c("kingdom", "phylum", "class", "order",
-  "genus"))
+confirm_species_list(
+  x,
+  ranks = c("kingdom", "phylum", "class", "order", "genus")
+)
 }
 \arguments{
 \item{x}{A \code{\link[=make_species_list]{speciesList}} object.}
