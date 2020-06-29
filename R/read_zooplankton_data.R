@@ -85,6 +85,7 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
   ### Column names
   
   colns <- guess_colname(cols = c("expedition", "station", "sample_name", "date", "from", "to", "unit", "comment"), df = tmp)
+  colns <- colns[!is.na(colns)]
   tmp <- tmp[colns]
   names(tmp) <- names(colns)
   
@@ -200,9 +201,6 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
     sp$species <- trimws(sp$species)
     
     ## Typical typos
-    if(any(sp$species %in% (tmp_sp <- "Triconia (=Oncaea) borealis"))) {
-      sp$species[sp$species == tmp_sp] <- "Triconia borealis"
-    }
     
     if(any(sp$species %in% (tmp_sp <- "Jashnovia brevis"))) {
       sp$species[sp$species == tmp_sp] <- "Jaschnovia brevis"
@@ -220,7 +218,12 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
       sp$stage[sp$species == tmp_sp & sp$stage %in% c("veliger (incl. Margarites)", "veliger (cf. Margarites)")]  <- "veliger (incl. Margarites and Velutina)"
     }
     
+    if(any(sp$species %in% (tmp_sp <- "Pseudhaloptilus (=Pachyptilus) pacificus"))) {
+      sp$species[sp$species == tmp_sp] <- "Pachyptilus pacificus"
+    }
+    
     sp$species <- gsub("Frittilaria", "Fritillaria", sp$species)
+    sp$species <- gsub("Triconia \\(\\=Oncaea\\)", "Triconia", sp$species)
     
     sp[sp$species == "Calanoida nauplii", c("species", "stage")] <- c("Calanoida", "nauplii")
     sp[sp$species == "Nemertea pilidium", c("species", "stage")] <- c("Nemertea", "pilidium")
@@ -286,7 +289,7 @@ read_zooplankton_data <- function(data_file, sheet = 1, dataStart = NULL, dataEn
     if(any(is.na(sp$species_ID))) {
       
       if(length(sp[is.na(sp$species_ID),"size_op"]) > 0) {
-        stop("stage or size_op error with ", warn_vec(sp[is.na(sp$species_ID), "species"]))
+        stop("Species name recorded wrong or not added in the species list in ", paste(sp[is.na(sp$species_ID), "species"], collapse = ", "))
       }
       
       tmp <- sp[is.na(sp$species_ID), "species"]

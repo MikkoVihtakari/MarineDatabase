@@ -23,6 +23,7 @@
 
 ## Test parameters
 # obj = dt; sp_group = "species"; meta_group = NULL; meta_group_method = "depth_mean"; biomass = FALSE; remove_noncont = FALSE; warnings = TRUE
+# sp_group = "species"; meta_group = c("expedition", "station", "date"); meta_group_method = "depth_mean"; biomass = TRUE; remove_noncont = TRUE; warnings = TRUE
 summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, meta_group_method = "depth_mean", biomass = FALSE, remove_noncont = FALSE, warnings = TRUE) {
 
   ## Tests ####
@@ -140,14 +141,14 @@ summarize_zooplankton_data <- function(obj, sp_group = NULL, meta_group = NULL, 
       
       tmp <- tmp %>% group_by_(.dots = meta_group) %>% mutate(gap = from - lead(to))
       
-      noncont <- tmp[!is.na(tmp$gap) & tmp$gap != 0,]$id
+      noncont <- suppressWarnings(tmp[!is.na(tmp$gap) & tmp$gap != 0,]$id)
       
       if(remove_noncont) {
         
       dat$tmp_id <- apply(dat[,meta_group], 1, paste, collapse = "-")
       tmp$tmp_id <- apply(tmp[,meta_group], 1, paste, collapse = "-")
       
-      drop_ids <- tmp[tmp$id %in% noncont, ]$tmp_id
+      drop_ids <- suppressWarnings(tmp[tmp$id %in% noncont, ]$tmp_id)
       
       dat <- dat[!dat$tmp_id %in% drop_ids,]
       dat <- dat[!names(dat) %in% "tmp_id"]
